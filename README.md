@@ -15,35 +15,37 @@ Terraform Module Template
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
+This example demonstrates the usage of this Terraform module with default settings.
+
 ```hcl
 module "terraform_module_example" {
   source = "cloudeteer/terraform-module-example/azurerm"
 }
 ```
 
-## Providers
 
-No providers.
 
-## Modules
 
-No modules.
 
-## Resources
 
-No resources.
 
-## Inputs
+## Required Inputs
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| example\_variable | Example variable (between 3 and 13 characters) | `string` | n/a | yes |
+The following input variables are required:
+
+### <a name="input_example_variable"></a> [example\_variable](#input\_example\_variable)
+
+Description: Example variable (between 3 and 13 characters)
+
+Type: `string`
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| example\_output | n/a |
+The following outputs are exported:
+
+### <a name="output_example_output"></a> [example\_output](#output\_example\_output)
+
+Description: n/a
 <!-- END_TF_DOCS -->
 
 ## Contributions
