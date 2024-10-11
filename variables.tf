@@ -81,7 +81,7 @@ variable "auto_patching_maintenance_window_starting_hour" {
   default     = null
 }
 
-variable "azurerm_virtual_machine_backup_policy_vm_id" {
+variable "backup_policy_id" {
   description = "The ID of the backup policy to use."
   type        = string
   default     = null
@@ -92,7 +92,7 @@ variable "azurerm_virtual_machine_backup_policy_vm_id" {
   #   }
 }
 
-variable "azurerm_virtual_machine_data_disks" {
+variable "data_disks" {
   description = <<-EOT
     Additional disks to be attached to the virtual machine.
 
@@ -123,125 +123,6 @@ variable "azurerm_virtual_machine_data_disks" {
   }))
 
   default = []
-}
-
-variable "azurerm_virtual_machine_identity" {
-  description = <<-EOT
-    The Azure managed identity to assign to the virtual machine.
-
-    Optional parameters:
-
-    Parameter | Description
-    -- | --
-    `type` | Specifies the type of Managed Service Identity that should be configured on this Windows Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, or `SystemAssigned, UserAssigned` (to enable both).
-    `identity_ids` | Specifies a list of User Assigned Managed Identity IDs to be assigned to this Windows Virtual Machine.
-  EOT
-
-  type = object({
-    type         = optional(string)
-    identity_ids = optional(list(string))
-  })
-
-  default = null
-}
-
-variable "azurerm_virtual_machine_image" {
-  description = <<-EOT
-    The URN or URN alias of the operating system image. Valid URN format is `Publisher:Offer:SKU:Version`. Use `az vm image list` to list possible URN values.
-
-    Valid URN aliases are:
-    - `Win2022Datacenter`
-    - `Win2022AzureEditionCore`
-    - `Win2019Datacenter`
-    - `Win2016Datacenter`
-    - `Win2012R2Datacenter`
-    - `Win2012Datacenter`
-  EOT
-
-  type = string
-}
-
-variable "azurerm_virtual_machine_key_vault_id" {
-  description = "Key Vault ID to store the generated admin password or admin SSH private key. Required when admin_password or admin_ssh_public_key is not set. Must not be set if either admin_password or admin_ssh_public_key is set."
-  default     = null
-  type        = string
-
-  # validation {
-  #   condition = var.key_vault_id == null ? (
-  #     (var.authentication_type == "Password" && var.admin_password != null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key != null)
-  #     ) : (
-  #     (var.authentication_type == "Password" && var.admin_password == null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key == null)
-  #   )
-  #   error_message = "Invalid combination of key_vault_id, admin_password, and admin_ssh_public_key. If key_vault_id is null, admin_password or admin_ssh_public_key must be non-null. If key_vault_id is not null, admin_password and admin_ssh_public_key must be null."
-  # }
-}
-
-variable "azurerm_virtual_machine_location" {
-  description = "The Azure location where the virtual machine should reside."
-  type        = string
-  default     = null
-
-}
-
-variable "azurerm_virtual_machine_name" {
-  description = "The name of the virtual machine. Changing this forces a new resource to be created."
-  type        = string
-  default     = null
-}
-
-variable "azurerm_virtual_machine_network_interface_ids" {
-  default     = null
-  description = "A list of network interface IDs to attach to this virtual machine. The first network interface ID in this list will be the primary network interface of the virtual machine. If `subnet_id` is set, then the network interface created by this module will be the primary network interface of the virtual machine."
-  type        = list(string)
-}
-
-variable "azurerm_virtual_machine_os_disk" {
-  description = <<-EOT
-    Operating system disk parameters.
-
-    Optional parameters:
-
-    Parameter | Description
-    -- | --
-    `caching` | The Type of Caching which should be used for the Internal OS Disk. Possible values are `None`, `ReadOnly` and `ReadWrite`.
-    `disk_encryption_set_id` | The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk. Conflicts with `secure_vm_disk_encryption_set_id`.
-    || **NOTE**: The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
-    `disk_size_gb` | The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine is sourced from.
-    || **NOTE**: If specified this must be equal to or larger than the size of the Image the Virtual Machine is based on. When creating a larger disk than exists in the image you'll need to repartition the disk to use the remaining space.
-    `name` | The name which should be used for the Internal OS Disk. Default is `name` prefixed with `osdisk-`.
-    `security_encryption_type` | Encryption Type when the Virtual Machine is a Confidential VM. Possible values are `VMGuestStateOnly` and `DiskWithVMGuestState`.
-    || **NOTE**: `vtpm_enabled` must be set to true when `security_encryption_type` is specified.
-    || **NOTE**: `encryption_at_host_enabled` cannot be set to true when `security_encryption_type` is set to `DiskWithVMGuestState`.
-    `secure_vm_disk_encryption_set_id` | The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk when the Virtual Machine is a Confidential VM. Conflicts with `disk_encryption_set_id`.
-    || **NOTE**: `secure_vm_disk_encryption_set_id` can only be specified `when security_encryption_type` is set to `DiskWithVMGuestState`.
-    `storage_account_type` | The Type of Storage Account which should back this the Internal OS Disk. Possible values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS`, `StandardSSD_ZRS` and `Premium_ZRS`.
-    `write_accelerator_enabled` | Should Write Accelerator be Enabled for this OS Disk? Defaults to `false`.
-    || **NOTE**: This requires that the `storage_account_type` is set to `Premium_LRS` and that `caching` is set to `None`.
-  EOT
-
-  type = object({
-    caching                          = optional(string, "ReadWrite")
-    disk_size_gb                     = optional(string)
-    name                             = optional(string)
-    storage_account_type             = optional(string, "Premium_LRS")
-    disk_encryption_set_id           = optional(string)
-    write_accelerator_enabled        = optional(bool, false)
-    secure_vm_disk_encryption_set_id = optional(string)
-    security_encryption_type         = optional(string)
-  })
-  default = {}
-}
-
-variable "azurerm_virtual_machine_resource_group_name" {
-  description = "The name of the resource group to deploy the MSSQL server. This should match the resource group used in the Virtual Machine module to ensure all related resources are managed within the same group."
-  type        = string
-  default     = null
-}
-
-variable "azurerm_virtual_machine_subnet_id" {
-  default     = null
-  description = "The ID of the subnet where the virtual machine's primary network interface should be located."
-  type        = string
 }
 
 variable "days_of_week" {
@@ -286,6 +167,42 @@ variable "enable_wsfc_domain_credential" {
   default     = false
 }
 
+variable "identity" {
+  description = <<-EOT
+    The Azure managed identity to assign to the virtual machine.
+
+    Optional parameters:
+
+    Parameter | Description
+    -- | --
+    `type` | Specifies the type of Managed Service Identity that should be configured on this Windows Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, or `SystemAssigned, UserAssigned` (to enable both).
+    `identity_ids` | Specifies a list of User Assigned Managed Identity IDs to be assigned to this Windows Virtual Machine.
+  EOT
+
+  type = object({
+    type         = optional(string)
+    identity_ids = optional(list(string))
+  })
+
+  default = null
+}
+
+variable "image" {
+  description = <<-EOT
+    The URN or URN alias of the operating system image. Valid URN format is `Publisher:Offer:SKU:Version`. Use `az vm image list` to list possible URN values.
+
+    Valid URN aliases are:
+    - `Win2022Datacenter`
+    - `Win2022AzureEditionCore`
+    - `Win2019Datacenter`
+    - `Win2016Datacenter`
+    - `Win2012R2Datacenter`
+    - `Win2012Datacenter`
+  EOT
+
+  type = string
+}
+
 # variable "key_vault_credential_key_vault_url" {
 #   description = "The URL of the Azure Key Vault to store credentials."
 #   type        = string
@@ -309,6 +226,78 @@ variable "enable_wsfc_domain_credential" {
 variable "r_services_enabled" {
   description = "Enable or disable R services for the MSSQL virtual machine."
   type        = bool
+  default     = null
+}
+
+variable "key_vault_id" {
+  description = "Key Vault ID to store the generated admin password or admin SSH private key. Required when admin_password or admin_ssh_public_key is not set. Must not be set if either admin_password or admin_ssh_public_key is set."
+  default     = null
+  type        = string
+
+  # validation {
+  #   condition = var.key_vault_id == null ? (
+  #     (var.authentication_type == "Password" && var.admin_password != null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key != null)
+  #     ) : (
+  #     (var.authentication_type == "Password" && var.admin_password == null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key == null)
+  #   )
+  #   error_message = "Invalid combination of key_vault_id, admin_password, and admin_ssh_public_key. If key_vault_id is null, admin_password or admin_ssh_public_key must be non-null. If key_vault_id is not null, admin_password and admin_ssh_public_key must be null."
+  # }
+}
+
+variable "location" {
+  description = "The Azure location where the virtual machine should reside."
+  type        = string
+  default     = null
+}
+
+variable "name" {
+  description = "The name of the virtual machine. Changing this forces a new resource to be created."
+  type        = string
+  default     = null
+}
+
+
+variable "os_disk" {
+  description = <<-EOT
+    Operating system disk parameters.
+
+    Optional parameters:
+
+    Parameter | Description
+    -- | --
+    `caching` | The Type of Caching which should be used for the Internal OS Disk. Possible values are `None`, `ReadOnly` and `ReadWrite`.
+    `disk_encryption_set_id` | The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk. Conflicts with `secure_vm_disk_encryption_set_id`.
+    || **NOTE**: The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
+    `disk_size_gb` | The Size of the Internal OS Disk in GB, if you wish to vary from the size used in the image this Virtual Machine is sourced from.
+    || **NOTE**: If specified this must be equal to or larger than the size of the Image the Virtual Machine is based on. When creating a larger disk than exists in the image you'll need to repartition the disk to use the remaining space.
+    `name` | The name which should be used for the Internal OS Disk. Default is `name` prefixed with `osdisk-`.
+    `security_encryption_type` | Encryption Type when the Virtual Machine is a Confidential VM. Possible values are `VMGuestStateOnly` and `DiskWithVMGuestState`.
+    || **NOTE**: `vtpm_enabled` must be set to true when `security_encryption_type` is specified.
+    || **NOTE**: `encryption_at_host_enabled` cannot be set to true when `security_encryption_type` is set to `DiskWithVMGuestState`.
+    `secure_vm_disk_encryption_set_id` | The ID of the Disk Encryption Set which should be used to Encrypt this OS Disk when the Virtual Machine is a Confidential VM. Conflicts with `disk_encryption_set_id`.
+    || **NOTE**: `secure_vm_disk_encryption_set_id` can only be specified `when security_encryption_type` is set to `DiskWithVMGuestState`.
+    `storage_account_type` | The Type of Storage Account which should back this the Internal OS Disk. Possible values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS`, `StandardSSD_ZRS` and `Premium_ZRS`.
+    `write_accelerator_enabled` | Should Write Accelerator be Enabled for this OS Disk? Defaults to `false`.
+    || **NOTE**: This requires that the `storage_account_type` is set to `Premium_LRS` and that `caching` is set to `None`.
+  EOT
+
+  type = object({
+    caching                          = optional(string, "ReadWrite")
+    disk_size_gb                     = optional(string)
+    name                             = optional(string)
+    storage_account_type             = optional(string, "Premium_LRS")
+    disk_encryption_set_id           = optional(string)
+    write_accelerator_enabled        = optional(bool, false)
+    secure_vm_disk_encryption_set_id = optional(string)
+    security_encryption_type         = optional(string)
+  })
+
+  default = {}
+}
+
+variable "resource_group_name" {
+  description = "The name of the resource group to deploy the MSSQL server. This should match the resource group used in the Virtual Machine module to ensure all related resources are managed within the same group."
+  type        = string
   default     = null
 }
 
@@ -432,4 +421,10 @@ variable "tags" {
   description = "Tags to assign to the resources."
   type        = map(string)
   default     = {}
+}
+
+variable "subnet_id" {
+  default     = null
+  description = "The ID of the subnet where the virtual machine's primary network interface should be located."
+  type        = string
 }
