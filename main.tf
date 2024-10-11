@@ -2,21 +2,17 @@ module "azurerm_virtual_machine" {
   source  = "cloudeteer/vm/azurerm"
   version = "0.0.14"
 
+  admin_password      = local.admin_password
+  admin_username      = var.admin_username
   image               = var.image
   location            = var.location
   name                = var.name
   resource_group_name = var.resource_group_name
+  size                = var.size
 
-  # Storage / Disk Configuration
   #   os_disk_size_gb = var.azurerm_virtual_machine_os_disk.disk_size_gb
-
   data_disks = var.data_disks
-
-  # Identity for the VM
-  #   identity = {
-  #     type = UserAssigned
-  #     identity_ids =
-  #   }
+  os_disk    = var.os_disk
 
   # Networking
   subnet_id                  = var.subnet_id
@@ -25,6 +21,15 @@ module "azurerm_virtual_machine" {
   secure_boot_enabled        = false # only for mpn subscription never do this in prod
   backup_policy_id           = var.backup_policy_id
   key_vault_id               = var.key_vault_id
+
+  # Identity for the VM
+  dynamic "identity" {
+    for_each = try(var.identity.type, null) != null ? [1] : []
+    content {
+      type         = var.identity.type
+      identity_ids = try(coalescelist(var.identity.identity_ids, azurerm_user_assigned_identity.this[*].id), null)
+    }
+  }
 }
 
 resource "azurerm_mssql_virtual_machine" "this" {
@@ -35,27 +40,27 @@ resource "azurerm_mssql_virtual_machine" "this" {
   virtual_machine_id    = module.azurerm_virtual_machine.id
   tags                  = var.tags
 
-#   dynamic "auto_backup" {
-#     for_each = var.enable_auto_backup ? [1] : []
-#     content {
-#       encryption_enabled              = var.auto_backup_encryption_enabled
-#       encryption_password             = var.auto_backup_encryption_password
-#       retention_period_in_days        = var.auto_backup_retention_period_in_days
-#       storage_account_access_key      = var.auto_backup_storage_account_access_key
-#       storage_blob_endpoint           = var.auto_backup_storage_blob_endpoint
-#       system_databases_backup_enabled = var.auto_backup_system_databases_backup_enabled
-#     }
-    #     dynamic "manual_schedule" {
-    #       for_each = var.enable_manual_schedule ? [1] : []
-    #       content {
-    #         days_of_week                    = var.days_of_week
-    #         full_backup_frequency           = var.auto_backup_manual_schedule_full_backup_frequency
-    #         full_backup_start_hour          = var.auto_backup_manual_schedule_full_backup_start_hour
-    #         full_backup_window_in_hours     = var.auto_backup_manual_schedule_full_backup_window_in_hours
-    #         log_backup_frequency_in_minutes = var.auto_backup_manual_schedule_log_backup_frequency_in_minutes
-    #       }
-    #     }
-#   }
+  #   dynamic "auto_backup" {
+  #     for_each = var.enable_auto_backup ? [1] : []
+  #     content {
+  #       encryption_enabled              = var.auto_backup_encryption_enabled
+  #       encryption_password             = var.auto_backup_encryption_password
+  #       retention_period_in_days        = var.auto_backup_retention_period_in_days
+  #       storage_account_access_key      = var.auto_backup_storage_account_access_key
+  #       storage_blob_endpoint           = var.auto_backup_storage_blob_endpoint
+  #       system_databases_backup_enabled = var.auto_backup_system_databases_backup_enabled
+  #     }
+  #     dynamic "manual_schedule" {
+  #       for_each = var.enable_manual_schedule ? [1] : []
+  #       content {
+  #         days_of_week                    = var.days_of_week
+  #         full_backup_frequency           = var.auto_backup_manual_schedule_full_backup_frequency
+  #         full_backup_start_hour          = var.auto_backup_manual_schedule_full_backup_start_hour
+  #         full_backup_window_in_hours     = var.auto_backup_manual_schedule_full_backup_window_in_hours
+  #         log_backup_frequency_in_minutes = var.auto_backup_manual_schedule_log_backup_frequency_in_minutes
+  #       }
+  #     }
+  #   }
 
   dynamic "auto_patching" {
     for_each = var.enable_auto_patching ? [1] : []
@@ -89,18 +94,17 @@ resource "azurerm_mssql_virtual_machine" "this" {
   #     }
   #   }
 
-#   dynamic "sql_instance" {
-#     for_each = var.enable_sql_instance ? [1] : []
-#     content {
-#       adhoc_workloads_optimization_enabled = var.sql_instance_adhoc_workloads_optimization_enabled
-#       collation                            = var.sql_instance_collation
-#       instant_file_initialization_enabled  = var.sql_instance_instant_file_initialization_enabled
-#       lock_pages_in_memory_enabled         = var.sql_instance_lock_pages_in_memory_enabled
-#       max_dop                              = var.sql_instance_max_dop
-#       #       max_server_memory_mb                 = var.sql_instance_max_server_memory_mb
-#       #       min_server_memory_mb                 = var.sql_instance_min_server_memory_mb
-#     }
-    # TODO: let mssql only use 80% of the virtual machine memory
-  }
+  #   dynamic "sql_instance" {
+  #     for_each = var.enable_sql_instance ? [1] : []
+  #     content {
+  #       adhoc_workloads_optimization_enabled = var.sql_instance_adhoc_workloads_optimization_enabled
+  #       collation                            = var.sql_instance_collation
+  #       instant_file_initialization_enabled  = var.sql_instance_instant_file_initialization_enabled
+  #       lock_pages_in_memory_enabled         = var.sql_instance_lock_pages_in_memory_enabled
+  #       max_dop                              = var.sql_instance_max_dop
+  #       #       max_server_memory_mb                 = var.sql_instance_max_server_memory_mb
+  #       #       min_server_memory_mb                 = var.sql_instance_min_server_memory_mb
+  #     }
+}
 
 

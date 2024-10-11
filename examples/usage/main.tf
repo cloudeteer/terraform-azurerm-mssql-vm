@@ -85,11 +85,10 @@ resource "azurerm_key_vault" "example" {
 module "mssql_azure_vm" {
   source = "../../"
 
-  backup_policy_id = azurerm_backup_policy_vm.example.id
+  backup_policy_id    = azurerm_backup_policy_vm.example.id
   key_vault_id        = azurerm_key_vault.example.id
   location            = azurerm_resource_group.example.location
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
   subnet_id           = azurerm_subnet.example.id
-  image               = "MicrosoftSQLServer:SQL2019-WS2019:Standard:latest"
 }

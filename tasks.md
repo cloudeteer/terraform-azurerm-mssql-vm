@@ -41,13 +41,13 @@ Align the module with the latest cloudeteer standards:
 - [ ] ⭐ **Simplify Configuration**  
   Remove all unused optional arguments from the `azurerm_mssql_virtual_machine` resource to keep the configuration minimal and focused.
 
-- [ ] ⭐ **Default VM Image**  
+- [X] ⭐ **Default VM Image**  
   Define a default `azurerm_virtual_machine_image` input variable for the module to provide a baseline image.
 
-- [ ] ⭐ **Virtual Machine Size**  
+- [X] ⭐ **Virtual Machine Size**  
   Use the `size` input variable from the virtual machine submodule and allow it to be overridden by users. Determine an appropriate default size for a MSSQL virtual machine.
 
-- [ ] ⭐ **Optional Admin Password Storage**  
+- [X] ⭐ **Optional Admin Password Storage**  
   Add an option to disable storing the generated admin password in a key vault, leveraging the [`store_secret_in_key_vault`](https://github.com/cloudeteer/terraform-azurerm-vm#-store_secret_in_key_vault) argument.
 
 - [ ] ⭐ **Allow OS Disk Configuration**  
