@@ -10,6 +10,12 @@ variable "admin_username" {
   type        = string
 }
 
+variable "allow_extension_operations" {
+  description = "Should Extension Operations be allowed on this Virtual Machine?"
+  type        = bool
+  default     = true
+}
+
 variable "auto_backup_encryption_enabled" {
   description = "A boolean flag to specify whether encryption is enabled for backups."
   type        = bool
@@ -46,9 +52,9 @@ variable "auto_backup_manual_schedule_full_backup_window_in_hours" {
 }
 
 variable "auto_backup_manual_schedule_log_backup_frequency_in_minutes" {
-  description = "The frequency in minutes for log backups."
+  description = "Frequency of log backups, in minutes. Valid values are from 5 to 60."
   type        = number
-  default     = null
+  default     = 5
 }
 
 variable "auto_backup_retention_period_in_days" {
@@ -104,6 +110,36 @@ variable "backup_policy_id" {
   #   }
 }
 
+variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
+  description = <<-EOT
+    Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM.
+
+    **NOTE**: Can only be set to true when `patch_mode` is set to `AutomaticByPlatform`.
+  EOT
+
+  type    = bool
+  default = true
+}
+
+variable "computer_name" {
+  description = <<-EOT
+    Specifies the hostname to use for this virtual machine. If unspecified, it defaults to `name`.
+  EOT
+
+  type    = string
+  default = null
+
+  validation {
+    condition     = var.computer_name != null ? length(var.computer_name) <= 15 : true
+    error_message = "Windows computer name can be at most 15 characters."
+  }
+
+  #   validation {
+  #     condition     = var.computer_name == null ? length(var.name) <= 15 : true
+  #     error_message = "Windows computer name can be at most 15 characters. Variable \"computer_name\" is not set, falling back to \"name\" which is ${length(var.name)} chatacters long. Set \"computer_name\" explicitly."
+  #   }
+}
+
 variable "data_disks" {
   description = <<-EOT
     Additional disks to be attached to the virtual machine.
@@ -114,6 +150,7 @@ variable "data_disks" {
     -- | --
     `disk_size_gb` | Specifies the size of the managed disk to create in gigabytes.
     `lun` | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine.
+    `sql_storage_type` |
 
     Optional parameters:
 
@@ -124,6 +161,7 @@ variable "data_disks" {
     `name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
     `storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
   EOT
+#TODO: ChanGE description
 
   type = list(object({
     caching              = optional(string, "ReadWrite")
@@ -132,9 +170,12 @@ variable "data_disks" {
     lun                  = number
     name                 = optional(string)
     storage_account_type = optional(string, "Premium_LRS")
+    sql_storage_type     = optional(string)
   }))
 
   default = []
+
+  #TODO: build validation for sql_storage_type
 }
 
 variable "days_of_week" {
@@ -155,16 +196,17 @@ variable "enable_auto_patching" {
   default     = false
 }
 
-variable "enable_key_vault_credential" {
-  description = "A boolean flag to enable or disable Key Vault credentials for the SQL virtual machine."
-  type        = bool
-  default     = false
+variable "enable_automatic_updates" {
+  description = "Specifies whether Automatic Updates are enabled for Windows Virtual Machines. This feature is not supported on Linux Virtual Machines."
+
+  type    = bool
+  default = true
 }
 
-variable "enable_manual_schedule" {
-  description = "A boolean flag to enable or disable the manual schedule for SQL backups."
+variable "enable_backup_protected_vm" {
+  description = "Enable (`true`) or disable (`false`) a backup protected VM."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "enable_sql_instance" {
@@ -173,11 +215,11 @@ variable "enable_sql_instance" {
   default     = false
 }
 
-variable "enable_wsfc_domain_credential" {
-  description = "A boolean flag to enable or disable WSFC domain credentials for the SQL virtual machine."
-  type        = bool
-  default     = false
-}
+# variable "enable_wsfc_domain_credential" {
+#   description = "A boolean flag to enable or disable WSFC domain credentials for the SQL virtual machine."
+#   type        = bool
+#   default     = false
+# }
 
 variable "identity" {
   description = <<-EOT
@@ -197,6 +239,47 @@ variable "identity" {
   })
 
   default = null
+}
+
+variable "extensions" {
+  description = <<-EOT
+    List of extensions to enable.
+
+    Possible values:
+    - `NetworkWatcherAgent`
+    - `AzureMonitorAgent`
+    - `AzurePolicy`
+    - `AntiMalware`
+  EOT
+
+  type = list(string)
+
+  default = [
+    "NetworkWatcherAgent",
+    "AzureMonitorAgent",
+    "AzurePolicy",
+    "AntiMalware",
+  ]
+}
+
+variable "hotpatching_enabled" {
+
+  description = <<-EOT
+    Should the Windows VM be patched without requiring a reboot? [more infos](https://learn.microsoft.com/windows-server/get-started/hotpatch)
+
+    **NOTE**: Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2 VM](https://learn.microsoft.com/en-gb/azure/virtual-machines/generation-2#generation-2-vm-sizes).
+
+    **CAUTION**: The setting `bypass_platform_safety_checks_on_user_schedule_enabled` is set to `true` by default. To enable hotpatching, change it to `false`.
+  EOT
+
+  type = bool
+
+  default = false
+
+  validation {
+    condition     = var.hotpatching_enabled == true ? true : var.bypass_platform_safety_checks_on_user_schedule_enabled
+    error_message = "Only one of the following options can be set to true: either bypass_platform_safety_checks_on_user_schedule_enabled or hotpatching_enabled."
+  }
 }
 
 variable "image" {
@@ -311,6 +394,43 @@ variable "os_disk" {
   }
 }
 
+variable "patch_assessment_mode" {
+  description = <<-EOT
+    Specifies the mode of VM Guest Patching for the Virtual Machine. Possible values are AutomaticByPlatform or ImageDefault.
+
+    **NOTE**: If the `patch_assessment_mode` is set to `AutomaticByPlatform` then the `provision_vm_agent` field must be set to `true`.
+
+    Possible values:
+    - `AutomaticByPlatform`
+    - `ImageDefault`
+  EOT
+
+  type    = string
+  default = "AutomaticByPlatform"
+}
+
+variable "patch_mode" {
+  description = <<-EOT
+    Specifies the mode of in-guest patching to this Windows Virtual Machine. For more information on patch modes please see the [product documentation](https://docs.microsoft.com/azure/virtual-machines/automatic-vm-guest-patching#patch-orchestration-modes).
+
+    **NOTE**: If `patch_mode` is set to `AutomaticByPlatform` then `provision_vm_agent` must also be set to true. If the Virtual Machine is using a hotpatching enabled image the `patch_mode` must always be set to `AutomaticByPlatform`.
+
+    Possible values:
+    - `AutomaticByOS`
+    - `AutomaticByPlatform`
+    - `Manual`
+  EOT
+
+  type    = string
+  default = "AutomaticByPlatform"
+}
+
+variable "private_ip_address" {
+  description = "The static IP address to use. If not set (default), a dynamic IP address is assigned."
+  default     = null
+  type        = string
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group to deploy the MSSQL server. This should match the resource group used in the Virtual Machine module to ensure all related resources are managed within the same group."
   type        = string
@@ -408,57 +528,37 @@ variable "sql_instance_max_dop" {
 variable "sql_license_type" {
   description = "The SQL Server license type (PAYG or AHUB)."
   type        = string
-  default     = null
+  default     = "PAYG"
 }
 
-# variable "storage_configuration_data_settings" {
-#   description = "The Logical Unit Numbers (LUNs) for the attached disks."
-#   type        = list(number)
-#   default     = null
-# }
-#
-# variable "storage_configuration_data_settings_default_file_path" {
-#   description = "The default file path for the data settings in the storage configuration."
-#   type        = string
-# }
-#
-# variable "storage_configuration_data_settings_luns" {
-#   description = "The Logical Unit Numbers (LUNs) for the data settings in the storage configuration."
-#   type        = list(number)
-# }
-#
-# variable "storage_configuration_disk_type" {
-#   description = "The disk type for storage configuration. Possible values include 'Premium_LRS', 'Standard_LRS', etc."
-#   type        = string
-#   default     = "Premium_LRS"
-# }
-#
-# variable "storage_configuration_log_settings" {
-#   description = "The Logical Unit Numbers (LUNs) for the attached disks."
-#   type        = list(number)
-#   default     = null
-# }
-#
-# variable "storage_configuration_log_settings_default_file_path" {
-#   description = "The default file path for the log settings in the storage configuration."
-#   type        = string
-# }
-#
-# variable "storage_configuration_log_settings_luns" {
-#   description = "The Logical Unit Numbers (LUNs) for the log settings in the storage configuration."
-#   type        = list(number)
-# }
-#
-# variable "storage_configuration_storage_workload_type" {
-#   description = "The workload type for the storage configuration. Possible values include 'GeneralPurpose', 'OLTP', etc."
-#   type        = string
-#   default     = "GeneralPurpose"
-# }
+variable "storage_configuration_data_settings_default_file_path" {
+  description = "The default file path for the data settings in the storage configuration."
+  type        = string
+  default     = "G:\\data"
+}
 
-variable "tags" {
-  description = "Tags to assign to the resources."
-  type        = map(string)
-  default     = {}
+variable "storage_configuration_disk_type" {
+  description = "The type of disk configuration to apply to the SQL Server. Valid values include NEW, EXTEND, or ADD"
+  type        = string
+  default     = "NEW"
+}
+
+variable "storage_configuration_log_settings_default_file_path" {
+  description = "The default file path for the log settings in the storage configuration."
+  type        = string
+  default     = "H:\\log"
+}
+
+variable "storage_configuration_storage_workload_type" {
+  description = "The type of storage workload. Valid values include GENERAL, OLTP, or DW."
+  type        = string
+  default     = "OLTP"
+}
+
+variable "storage_configuration_system_db_on_data_disk_enabled" {
+  description = "Specifies whether to set system databases (except tempDb) location to newly created data storage. Possible values are true and false. Defaults to false."
+  type        = bool
+  default     = false
 }
 
 variable "store_secret_in_key_vault" {
@@ -471,4 +571,38 @@ variable "subnet_id" {
   default     = null
   description = "The ID of the subnet where the virtual machine's primary network interface should be located."
   type        = string
+}
+
+variable "tags" {
+  description = "A mapping of tags which should be assigned to all resources in this module."
+
+  type    = map(string)
+  default = {}
+}
+
+variable "tags_virtual_machine" {
+  description = "A mapping of tags which should be assigned to the Virtual Machine. This map will be merged with `tags`."
+
+  type    = map(string)
+  default = {}
+}
+
+variable "temp_db_settings_default_file_path" {
+  description = "(Required) The SQL Server default path"
+  type        = string
+  default     = "I:\\tempDb"
+}
+
+variable "timezone" {
+  description = "Specifies the Time Zone which should be used by the Virtual Machine, [the possible values are defined here](https://jackstromberg.com/2017/01/list-of-time-zones-consumed-by-azure/). Setting timezone is not supported on Linux Virtual Machines."
+
+  type    = string
+  default = null
+}
+
+variable "zone" {
+  description = "Availability Zone in which this Windows Virtual Machine should be located."
+
+  type    = string
+  default = null
 }

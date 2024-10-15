@@ -9,7 +9,6 @@ terraform {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  subscription_id                 = ""
   resource_provider_registrations = "none" # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
   features {}
 }
@@ -84,6 +83,24 @@ resource "azurerm_key_vault" "example" {
 
 module "mssql_azure_vm" {
   source = "../../"
+
+  data_disks = [
+    {
+      lun              = 0
+      disk_size_gb     = 64
+      sql_storage_type = "data"
+    },
+    {
+      lun              = 1
+      disk_size_gb     = 64
+      sql_storage_type = "log"
+    },
+    {
+      lun              = 2
+      disk_size_gb     = 64
+      sql_storage_type = "temp_db"
+    }
+  ]
 
   backup_policy_id    = azurerm_backup_policy_vm.example.id
   key_vault_id        = azurerm_key_vault.example.id
