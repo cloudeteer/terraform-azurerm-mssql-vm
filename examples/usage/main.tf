@@ -4,11 +4,16 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    time = {
+      source = "hashicorp/time"
+      version = "0.12.1"
+    }
   }
 }
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
+  subscription_id                 = "cefa63e8-d357-497a-a4eb-1acf2051b48f"
   resource_provider_registrations = "none" # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
   features {}
 }
@@ -65,7 +70,7 @@ resource "azurerm_backup_policy_vm" "example" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "example" {
-  name                = "kv-example-dev-we-03"
+  name                = "kv-example-dev-we-04"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -102,10 +107,13 @@ module "mssql_azure_vm" {
     }
   ]
 
-  backup_policy_id    = azurerm_backup_policy_vm.example.id
-  key_vault_id        = azurerm_key_vault.example.id
-  location            = azurerm_resource_group.example.location
-  name                = "example"
-  resource_group_name = azurerm_resource_group.example.name
-  subnet_id           = azurerm_subnet.example.id
+  temp_db_settings_default_file_path = "D:\\tempDB"
+
+  backup_policy_id          = azurerm_backup_policy_vm.example.id
+  key_vault_id              = azurerm_key_vault.example.id
+  location                  = azurerm_resource_group.example.location
+  name                      = "example"
+  resource_group_name       = azurerm_resource_group.example.name
+  subnet_id                 = azurerm_subnet.example.id
+  max_server_memory_percent = 70
 }

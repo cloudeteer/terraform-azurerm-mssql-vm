@@ -161,7 +161,7 @@ variable "data_disks" {
     `name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
     `storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
   EOT
-#TODO: ChanGE description
+  #TODO: Change description
 
   type = list(object({
     caching              = optional(string, "ReadWrite")
@@ -212,33 +212,7 @@ variable "enable_backup_protected_vm" {
 variable "enable_sql_instance" {
   description = "A boolean flag to enable or disable the SQL instance configuration."
   type        = bool
-  default     = false
-}
-
-# variable "enable_wsfc_domain_credential" {
-#   description = "A boolean flag to enable or disable WSFC domain credentials for the SQL virtual machine."
-#   type        = bool
-#   default     = false
-# }
-
-variable "identity" {
-  description = <<-EOT
-    The Azure managed identity to assign to the virtual machine.
-
-    Optional parameters:
-
-    Parameter | Description
-    -- | --
-    `type` | Specifies the type of Managed Service Identity that should be configured on this Windows Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, or `SystemAssigned, UserAssigned` (to enable both).
-    `identity_ids` | Specifies a list of User Assigned Managed Identity IDs to be assigned to this Windows Virtual Machine.
-  EOT
-
-  type = object({
-    type         = optional(string)
-    identity_ids = optional(list(string))
-  })
-
-  default = null
+  default     = true
 }
 
 variable "extensions" {
@@ -280,6 +254,26 @@ variable "hotpatching_enabled" {
     condition     = var.hotpatching_enabled == true ? true : var.bypass_platform_safety_checks_on_user_schedule_enabled
     error_message = "Only one of the following options can be set to true: either bypass_platform_safety_checks_on_user_schedule_enabled or hotpatching_enabled."
   }
+}
+
+variable "identity" {
+  description = <<-EOT
+    The Azure managed identity to assign to the virtual machine.
+
+    Optional parameters:
+
+    Parameter | Description
+    -- | --
+    `type` | Specifies the type of Managed Service Identity that should be configured on this Windows Virtual Machine. Possible values are `SystemAssigned`, `UserAssigned`, or `SystemAssigned, UserAssigned` (to enable both).
+    `identity_ids` | Specifies a list of User Assigned Managed Identity IDs to be assigned to this Windows Virtual Machine.
+  EOT
+
+  type = object({
+    type         = optional(string)
+    identity_ids = optional(list(string))
+  })
+
+  default = null
 }
 
 variable "image" {
@@ -344,6 +338,12 @@ variable "location" {
   description = "The Azure location where the virtual machine should reside."
   type        = string
   default     = null
+}
+
+variable "max_server_memory_percent" {
+  description = "Maximum server memory as a percentage of the total memory. Used if max_server_memory_mb is not provided."
+  type        = number
+  default     = 80
 }
 
 variable "name" {
@@ -505,25 +505,21 @@ variable "sql_instance_max_dop" {
   }
 }
 
-# variable "sql_instance_max_server_memory_mb" {
-#   description = "Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647. Defaults to 2147483647."
-#   type        = number
-#   default     = null
-#   validation {
-#     condition     = var.sql_instance_max_server_memory_mb >= 128 && var.sql_instance_max_server_memory_mb <= 2147483647
-#     error_message = "Max server memory must be between 128 and 2147483647 MB."
-#   }
-# }
-#
-# variable "sql_instance_min_server_memory_mb" {
-#   description = "Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647. Defaults to 0."
-#   type        = number
-#   default     = null
-#   validation {
-#     condition     = var.sql_instance_min_server_memory_mb >= 0 && var.sql_instance_min_server_memory_mb <= var.sql_instance_max_server_memory_mb
-#     error_message = "Min server memory must be between 0 and the maximum memory setting."
-#   }
-# }
+variable "sql_instance_max_server_memory_mb" {
+  description = "Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647. Defaults to 2147483647."
+  type        = number
+  default     = 128
+}
+
+variable "sql_instance_min_server_memory_mb" {
+  description = "Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647. Defaults to 0."
+  type        = number
+  default     = 0
+  validation {
+    condition     = var.sql_instance_min_server_memory_mb >= 0 && var.sql_instance_min_server_memory_mb <= var.sql_instance_max_server_memory_mb
+    error_message = "Min server memory must be between 0 and the maximum memory setting."
+  }
+}
 
 variable "sql_license_type" {
   description = "The SQL Server license type (PAYG or AHUB)."

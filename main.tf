@@ -5,7 +5,7 @@ module "azurerm_virtual_machine" {
   image    = var.image
   location = var.location
   name     = var.name
-  tags = merge(var.tags, var.tags_virtual_machine)
+  tags     = merge(var.tags, var.tags_virtual_machine)
 
   admin_password                                         = var.admin_password
   admin_username                                         = var.admin_username
@@ -14,7 +14,7 @@ module "azurerm_virtual_machine" {
   bypass_platform_safety_checks_on_user_schedule_enabled = var.bypass_platform_safety_checks_on_user_schedule_enabled
   computer_name                                          = var.computer_name
   data_disks                                             = var.data_disks
-  encryption_at_host_enabled = false # only for mpn subscription never do this in prod
+  encryption_at_host_enabled                             = false # only for mpn subscription never do this in prod
   enable_automatic_updates                               = var.enable_automatic_updates
   enable_backup_protected_vm                             = var.enable_backup_protected_vm
   extensions                                             = var.extensions
@@ -27,13 +27,14 @@ module "azurerm_virtual_machine" {
   private_ip_address                                     = var.private_ip_address
   create_public_ip_address                               = true
   resource_group_name                                    = var.resource_group_name
-  secure_boot_enabled = false # only for mpn subscription never do this in prod
+  secure_boot_enabled                                    = false # only for mpn subscription never do this in prod
   size                                                   = var.size
   store_secret_in_key_vault                              = var.store_secret_in_key_vault
   subnet_id                                              = var.subnet_id
   timezone                                               = var.timezone
-  vtpm_enabled = false # only for mpn subscription never do this in prod
+  vtpm_enabled                                           = false # only for mpn subscription never do this in prod
   zone                                                   = var.zone
+
 
   identity = var.identity
 }
@@ -42,7 +43,14 @@ locals {
   is_manual_schedule_enabled = false
 }
 
+resource "time_sleep" "wait_60_seconds" {
+  depends_on = [module.azurerm_virtual_machine]
+
+  create_duration = "60s"
+}
+
 resource "azurerm_mssql_virtual_machine" "this" {
+  depends_on            = [time_sleep.wait_60_seconds]
   r_services_enabled    = var.r_services_enabled
   sql_connectivity_port = var.sql_connectivity_port
   sql_connectivity_type = var.sql_connectivity_type
@@ -106,7 +114,7 @@ resource "azurerm_mssql_virtual_machine" "this" {
     system_db_on_data_disk_enabled = var.storage_configuration_system_db_on_data_disk_enabled
 
     dynamic "data_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "data"]) > 0 ? [true] : [ ]
+      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "data"]) > 0 ? [true] : []
       content {
         default_file_path = var.storage_configuration_data_settings_default_file_path
         luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "data"]
@@ -114,7 +122,7 @@ resource "azurerm_mssql_virtual_machine" "this" {
     }
 
     dynamic "log_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "log"]) > 0 ? [true] : [ ]
+      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "log"]) > 0 ? [true] : []
       content {
         default_file_path = var.storage_configuration_log_settings_default_file_path
         luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "log"]
@@ -122,10 +130,11 @@ resource "azurerm_mssql_virtual_machine" "this" {
     }
 
     dynamic "temp_db_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]) > 0 ? [true] : [ ]
+      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]) > 0 ? [true] : []
       content {
         default_file_path = var.temp_db_settings_default_file_path
-        luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]
+        luns              = []
+        #         luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]
       }
     }
   }
@@ -138,10 +147,31 @@ resource "azurerm_mssql_virtual_machine" "this" {
       instant_file_initialization_enabled  = var.sql_instance_instant_file_initialization_enabled
       lock_pages_in_memory_enabled         = var.sql_instance_lock_pages_in_memory_enabled
       max_dop                              = var.sql_instance_max_dop
-      #       max_server_memory_mb                 = var.sql_instance_max_server_memory_mb
-      #       min_server_memory_mb                 = var.sql_instance_min_server_memory_mb
+      max_server_memory_mb = coalesce(
+        (var.max_server_memory_percent != null ? floor(local.total_memory_mb * (var.max_server_memory_percent / 100)) : null), # Use percentage-based calculation if provided
+        var.sql_instance_max_server_memory_mb                                                                                  # Use absolute MB if percentage is not provided
+      )
+      min_server_memory_mb = var.sql_instance_min_server_memory_mb
     }
   }
 }
 
 
+locals {
+  vm_size_memory_mapping = {
+    "Standard_B2s"      = 4096  # 4 GB
+    "Standard_B2ms"     = 8192  # 8 GB
+    "Standard_D2s_v5"   = 8192  # 8 GB
+    "Standard_D4s_v5"   = 16384 # 16 GB
+    "Standard_DC2s_v2"  = 8192  # 8 GB
+    "Standard_DS1_v2"   = 3584  # 3.5 GB
+    "Standard_DS2_v2"   = 7168  # 7 GB
+    "Standard_E4s_v5"   = 32768 # 32 GB
+    "Standard_E4bds_v5" = 65536 # 64 GB
+    "Standard_F2s_v2"   = 4096  # 4 GB
+    "Standard_F4s_v2"   = 8192  # 8 GB
+  }
+
+  # Identify total memory for the selected SKU
+  total_memory_mb = lookup(local.vm_size_memory_mapping, var.size, 3584)
+}
