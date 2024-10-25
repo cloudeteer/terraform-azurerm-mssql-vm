@@ -13,7 +13,7 @@ module "azurerm_virtual_machine" {
   backup_policy_id                                       = var.backup_policy_id
   bypass_platform_safety_checks_on_user_schedule_enabled = var.bypass_platform_safety_checks_on_user_schedule_enabled
   computer_name                                          = var.computer_name
-  data_disks                                             = var.data_disks
+  data_disks                                             = local.data_disks
   encryption_at_host_enabled                             = false # only for mpn subscription never do this in prod
   enable_automatic_updates                               = var.enable_automatic_updates
   enable_backup_protected_vm                             = var.enable_backup_protected_vm
@@ -41,9 +41,37 @@ module "azurerm_virtual_machine" {
 
 locals {
   is_manual_schedule_enabled = false
+
+  data_disks = concat(
+    [
+      for item in var.storage_configuration.data_settings.luns : {
+        lun                  = item
+        disk_size_gb         = var.storage_configuration.data_settings.disk_size_gb
+        caching              = var.storage_configuration.data_settings.caching
+        storage_account_type = var.storage_configuration.data_settings.storage_account_type
+      }
+    ],
+    [
+      for item in var.storage_configuration.log_settings.luns : {
+        lun                  = item
+        disk_size_gb         = var.storage_configuration.log_settings.disk_size_gb
+        caching              = var.storage_configuration.log_settings.caching
+        storage_account_type = var.storage_configuration.log_settings.storage_account_type
+      }
+    ],
+    [
+      for item in var.storage_configuration.temp_db_settings.luns : {
+        lun                  = item
+        disk_size_gb         = var.storage_configuration.temp_db_settings.disk_size_gb
+        caching              = var.storage_configuration.temp_db_settings.caching
+        storage_account_type = var.storage_configuration.temp_db_settings.storage_account_type
+      }
+    ]
+  )
 }
 
 resource "time_sleep" "wait_60_seconds" {
+  count      = length(local.data_disks) == 0 ? 0 : 1
   depends_on = [module.azurerm_virtual_machine]
 
   create_duration = "60s"
@@ -109,32 +137,37 @@ resource "azurerm_mssql_virtual_machine" "this" {
   #   }
 
   storage_configuration {
-    disk_type                      = var.storage_configuration_disk_type
-    storage_workload_type          = var.storage_configuration_storage_workload_type
-    system_db_on_data_disk_enabled = var.storage_configuration_system_db_on_data_disk_enabled
+    disk_type                      = var.storage_configuration.disk_type
+    storage_workload_type          = var.storage_configuration.storage_workload_type
+    system_db_on_data_disk_enabled = var.storage_configuration.system_db_on_data_disk_enabled
 
     dynamic "data_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "data"]) > 0 ? [true] : []
+      for_each = var.storage_configuration.data_settings != null ? [true] : []
       content {
-        default_file_path = var.storage_configuration_data_settings_default_file_path
-        luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "data"]
+        default_file_path = var.storage_configuration.data_settings.default_file_path
+        luns              = var.storage_configuration.data_settings.luns
       }
     }
 
     dynamic "log_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "log"]) > 0 ? [true] : []
+      for_each = var.storage_configuration.log_settings != null ? [true] : []
       content {
-        default_file_path = var.storage_configuration_log_settings_default_file_path
-        luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "log"]
+        default_file_path = var.storage_configuration.log_settings.default_file_path
+        luns              = var.storage_configuration.log_settings.luns
       }
     }
 
     dynamic "temp_db_settings" {
-      for_each = length([for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]) > 0 ? [true] : []
+      for_each = var.storage_configuration.temp_db_settings != null ? [true] : []
       content {
-        default_file_path = var.temp_db_settings_default_file_path
-        luns              = []
-        #         luns              = [for i in var.data_disks : i.lun if i.sql_storage_type == "temp_db"]
+        default_file_path = var.storage_configuration.temp_db_settings.default_file_path
+        luns              = var.storage_configuration.temp_db_settings.luns
+
+        data_file_count        = var.storage_configuration.temp_db_settings.data_file_count
+        data_file_size_mb      = var.storage_configuration.temp_db_settings.data_file_size_mb
+        data_file_growth_in_mb = var.storage_configuration.temp_db_settings.data_file_growth_in_mb
+        log_file_size_mb       = var.storage_configuration.temp_db_settings.log_file_size_mb
+        log_file_growth_mb     = var.storage_configuration.temp_db_settings.log_file_growth_mb
       }
     }
   }

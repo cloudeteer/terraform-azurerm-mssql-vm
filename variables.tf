@@ -140,44 +140,6 @@ variable "computer_name" {
   #   }
 }
 
-variable "data_disks" {
-  description = <<-EOT
-    Additional disks to be attached to the virtual machine.
-
-    Required parameters:
-
-    Parameter | Description
-    -- | --
-    `disk_size_gb` | Specifies the size of the managed disk to create in gigabytes.
-    `lun` | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine.
-    `sql_storage_type` |
-
-    Optional parameters:
-
-    Parameter | Description
-    -- | --
-    `caching` | Specifies the caching requirements for this Data Disk. Possible values include `None`, `ReadOnly` and `ReadWrite`.
-    `create_option` | The method to use when creating the managed disk. Possible values include: `Empty` - Create an empty managed disk.
-    `name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
-    `storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
-  EOT
-  #TODO: Change description
-
-  type = list(object({
-    caching              = optional(string, "ReadWrite")
-    create_option        = optional(string, "Empty")
-    disk_size_gb         = number
-    lun                  = number
-    name                 = optional(string)
-    storage_account_type = optional(string, "Premium_LRS")
-    sql_storage_type     = optional(string)
-  }))
-
-  default = []
-
-  #TODO: build validation for sql_storage_type
-}
-
 variable "days_of_week" {
   description = "A list of days on which backup can take place. Possible values are Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday"
   type        = string
@@ -527,34 +489,55 @@ variable "sql_license_type" {
   default     = "PAYG"
 }
 
-variable "storage_configuration_data_settings_default_file_path" {
-  description = "The default file path for the data settings in the storage configuration."
-  type        = string
-  default     = "G:\\data"
-}
+variable "storage_configuration" {
+  #   description = <<-EOT
+  #   EOT
+  #   #TODO: Change description
 
-variable "storage_configuration_disk_type" {
-  description = "The type of disk configuration to apply to the SQL Server. Valid values include NEW, EXTEND, or ADD"
-  type        = string
-  default     = "NEW"
-}
+  type = object({
+    disk_type                      = string
+    storage_workload_type          = string
+    system_db_on_data_disk_enabled = bool
 
-variable "storage_configuration_log_settings_default_file_path" {
-  description = "The default file path for the log settings in the storage configuration."
-  type        = string
-  default     = "H:\\log"
-}
+    data_settings = optional(object({
+      default_file_path = string
+      luns              = list(number)
 
-variable "storage_configuration_storage_workload_type" {
-  description = "The type of storage workload. Valid values include GENERAL, OLTP, or DW."
-  type        = string
-  default     = "OLTP"
-}
+      # disk settings
+      disk_size_gb = optional(number)
+      caching      = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+    }))
 
-variable "storage_configuration_system_db_on_data_disk_enabled" {
-  description = "Specifies whether to set system databases (except tempDb) location to newly created data storage. Possible values are true and false. Defaults to false."
-  type        = bool
-  default     = false
+    log_settings = optional(object({
+      default_file_path = string
+      luns              = list(number)
+
+      # disk settings
+      disk_size_gb = optional(number)
+      caching      = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+    }))
+
+    temp_db_settings = optional(object({
+      default_file_path = string
+      luns              = list(number)
+
+      data_file_count        = optional(number, 8)
+      data_file_size_mb      = optional(number, 256)
+      data_file_growth_in_mb = optional(number, 512)
+      log_file_size_mb       = optional(number, 256)
+      log_file_growth_mb     = optional(number, 512)
+
+      # disk settings
+      disk_size_gb = optional(number)
+      caching      = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+    }))
+  })
 }
 
 variable "store_secret_in_key_vault" {
@@ -581,12 +564,6 @@ variable "tags_virtual_machine" {
 
   type    = map(string)
   default = {}
-}
-
-variable "temp_db_settings_default_file_path" {
-  description = "(Required) The SQL Server default path"
-  type        = string
-  default     = "I:\\tempDb"
 }
 
 variable "timezone" {

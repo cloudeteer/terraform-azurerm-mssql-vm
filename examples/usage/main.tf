@@ -5,7 +5,7 @@ terraform {
       version = "~> 4.0"
     }
     time = {
-      source = "hashicorp/time"
+      source  = "hashicorp/time"
       version = "0.12.1"
     }
   }
@@ -13,7 +13,6 @@ terraform {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  subscription_id                 = "cefa63e8-d357-497a-a4eb-1acf2051b48f"
   resource_provider_registrations = "none" # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
   features {}
 }
@@ -89,25 +88,30 @@ resource "azurerm_key_vault" "example" {
 module "mssql_azure_vm" {
   source = "../../"
 
-  data_disks = [
-    {
-      lun              = 0
-      disk_size_gb     = 64
-      sql_storage_type = "data"
-    },
-    {
-      lun              = 1
-      disk_size_gb     = 64
-      sql_storage_type = "log"
-    },
-    {
-      lun              = 2
-      disk_size_gb     = 64
-      sql_storage_type = "temp_db"
-    }
-  ]
+  storage_configuration = {
+    disk_type                      = "NEW"
+    storage_workload_type          = "OLTP"
+    system_db_on_data_disk_enabled = false
 
-  temp_db_settings_default_file_path = "D:\\tempDB"
+    data_settings = {
+      luns              = [0]
+      disk_size_gb      = 64
+      default_file_path = "G:\\data"
+    }
+    log_settings = {
+      luns              = [1]
+      disk_size_gb      = 64
+      default_file_path = "H:\\log"
+    }
+    temp_db_settings = {
+      luns              = []
+      default_file_path = "D:\\tempDB"
+    }
+  }
+
+  identity = {
+    type = "SystemAssigned"
+  }
 
   backup_policy_id          = azurerm_backup_policy_vm.example.id
   key_vault_id              = azurerm_key_vault.example.id
