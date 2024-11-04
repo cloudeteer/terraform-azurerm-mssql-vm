@@ -69,7 +69,7 @@ resource "azurerm_backup_policy_vm" "example" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "example" {
-  name                = "kv-example-dev-we-04"
+  name                = "kv-example-dev-we-99"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -88,26 +88,47 @@ resource "azurerm_key_vault" "example" {
 module "mssql_azure_vm" {
   source = "../../"
 
-  storage_configuration = {
-    disk_type                      = "NEW"
-    storage_workload_type          = "OLTP"
-    system_db_on_data_disk_enabled = false
+  # storage_configuration = {
+  #   disk_type                      = "NEW"
+  #   storage_workload_type          = "OLTP"
+  #   system_db_on_data_disk_enabled = false
 
-    data_settings = {
-      luns              = [0]
-      disk_size_gb      = 64
-      default_file_path = "G:\\data"
-    }
-    log_settings = {
-      luns              = [1]
-      disk_size_gb      = 64
-      default_file_path = "H:\\log"
-    }
-    temp_db_settings = {
-      luns              = []
-      default_file_path = "D:\\tempDB"
-    }
-  }
+  #   data_settings = {
+  #     luns              = [0]
+  #     disk_size_gb      = 64
+  #     default_file_path = "F:\\data"
+  #   }
+  #   log_settings = {
+  #     luns              = [1]
+  #     disk_size_gb      = 64
+  #     default_file_path = "G:\\log"
+  #   }
+  #   temp_db_settings = {
+  #     luns              = [2]
+  #     default_file_path = "H:\\tempDb"
+  #   }
+  # }
+
+  # storage_configuration = {
+  #   disk_type                      = "NEW"
+  #   storage_workload_type          = "OLTP"
+  #   system_db_on_data_disk_enabled = false
+
+  #   data_settings = {
+  #     luns              = [0, 1]
+  #     disk_size_gb      = 64
+  #     default_file_path = "F:\\data"
+  #   }
+  #   log_settings = {
+  #     luns              = [2, 3]
+  #     disk_size_gb      = 64
+  #     default_file_path = "G:\\log"
+  #   }
+  #   temp_db_settings = {
+  #     luns              = [4,5]
+  #     default_file_path = "H:\\tempDb"
+  #   }
+  # }
 
   identity = {
     type = "SystemAssigned"

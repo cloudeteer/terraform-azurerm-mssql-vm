@@ -494,14 +494,21 @@ variable "storage_configuration" {
   #   EOT
   #   #TODO: Change description
 
+  # default = {
+  #   disk_type             = "NEW"
+  #   storage_workload_type = "OLTP"
+  # }
+
+  default = null
+
   type = object({
     disk_type                      = string
     storage_workload_type          = string
-    system_db_on_data_disk_enabled = bool
+    system_db_on_data_disk_enabled = optional(bool, false)
 
     data_settings = optional(object({
       default_file_path = string
-      luns              = list(number)
+      luns              = optional(list(number), [])
 
       # disk settings
       disk_size_gb = optional(number)
@@ -512,7 +519,7 @@ variable "storage_configuration" {
 
     log_settings = optional(object({
       default_file_path = string
-      luns              = list(number)
+      luns              = optional(list(number), [])
 
       # disk settings
       disk_size_gb = optional(number)
@@ -523,7 +530,7 @@ variable "storage_configuration" {
 
     temp_db_settings = optional(object({
       default_file_path = string
-      luns              = list(number)
+      luns              = optional(list(number), [])
 
       data_file_count        = optional(number, 8)
       data_file_size_mb      = optional(number, 256)

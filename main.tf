@@ -44,7 +44,7 @@ locals {
 
   data_disks = concat(
     [
-      for item in var.storage_configuration.data_settings.luns : {
+      for item in try(var.storage_configuration.data_settings.luns, []) : {
         lun                  = item
         disk_size_gb         = var.storage_configuration.data_settings.disk_size_gb
         caching              = var.storage_configuration.data_settings.caching
@@ -52,7 +52,7 @@ locals {
       }
     ],
     [
-      for item in var.storage_configuration.log_settings.luns : {
+      for item in try(var.storage_configuration.log_settings.luns, []) : {
         lun                  = item
         disk_size_gb         = var.storage_configuration.log_settings.disk_size_gb
         caching              = var.storage_configuration.log_settings.caching
@@ -60,7 +60,7 @@ locals {
       }
     ],
     [
-      for item in var.storage_configuration.temp_db_settings.luns : {
+      for item in try(var.storage_configuration.temp_db_settings.luns, []) : {
         lun                  = item
         disk_size_gb         = var.storage_configuration.temp_db_settings.disk_size_gb
         caching              = var.storage_configuration.temp_db_settings.caching
@@ -136,38 +136,41 @@ resource "azurerm_mssql_virtual_machine" "this" {
   #     }
   #   }
 
-  storage_configuration {
-    disk_type                      = var.storage_configuration.disk_type
-    storage_workload_type          = var.storage_configuration.storage_workload_type
-    system_db_on_data_disk_enabled = var.storage_configuration.system_db_on_data_disk_enabled
+  dynamic "storage_configuration" {
+    for_each = var.storage_configuration != null ? [true] : []
+    content {
+      disk_type                      = var.storage_configuration.disk_type
+      storage_workload_type          = var.storage_configuration.storage_workload_type
+      system_db_on_data_disk_enabled = var.storage_configuration.system_db_on_data_disk_enabled
 
-    dynamic "data_settings" {
-      for_each = var.storage_configuration.data_settings != null ? [true] : []
-      content {
-        default_file_path = var.storage_configuration.data_settings.default_file_path
-        luns              = var.storage_configuration.data_settings.luns
+      dynamic "data_settings" {
+        for_each = var.storage_configuration.data_settings != null ? [true] : []
+        content {
+          default_file_path = var.storage_configuration.data_settings.default_file_path
+          luns              = var.storage_configuration.data_settings.luns
+        }
       }
-    }
 
-    dynamic "log_settings" {
-      for_each = var.storage_configuration.log_settings != null ? [true] : []
-      content {
-        default_file_path = var.storage_configuration.log_settings.default_file_path
-        luns              = var.storage_configuration.log_settings.luns
+      dynamic "log_settings" {
+        for_each = var.storage_configuration.log_settings != null ? [true] : []
+        content {
+          default_file_path = var.storage_configuration.log_settings.default_file_path
+          luns              = var.storage_configuration.log_settings.luns
+        }
       }
-    }
 
-    dynamic "temp_db_settings" {
-      for_each = var.storage_configuration.temp_db_settings != null ? [true] : []
-      content {
-        default_file_path = var.storage_configuration.temp_db_settings.default_file_path
-        luns              = var.storage_configuration.temp_db_settings.luns
+      dynamic "temp_db_settings" {
+        for_each = var.storage_configuration.temp_db_settings != null ? [true] : []
+        content {
+          default_file_path = var.storage_configuration.temp_db_settings.default_file_path
+          luns              = var.storage_configuration.temp_db_settings.luns
 
-        data_file_count        = var.storage_configuration.temp_db_settings.data_file_count
-        data_file_size_mb      = var.storage_configuration.temp_db_settings.data_file_size_mb
-        data_file_growth_in_mb = var.storage_configuration.temp_db_settings.data_file_growth_in_mb
-        log_file_size_mb       = var.storage_configuration.temp_db_settings.log_file_size_mb
-        log_file_growth_mb     = var.storage_configuration.temp_db_settings.log_file_growth_mb
+          data_file_count        = var.storage_configuration.temp_db_settings.data_file_count
+          data_file_size_mb      = var.storage_configuration.temp_db_settings.data_file_size_mb
+          data_file_growth_in_mb = var.storage_configuration.temp_db_settings.data_file_growth_in_mb
+          log_file_size_mb       = var.storage_configuration.temp_db_settings.log_file_size_mb
+          log_file_growth_mb     = var.storage_configuration.temp_db_settings.log_file_growth_mb
+        }
       }
     }
   }
