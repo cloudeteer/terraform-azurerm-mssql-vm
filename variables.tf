@@ -494,11 +494,6 @@ variable "storage_configuration" {
   #   EOT
   #   #TODO: Change description
 
-  # default = {
-  #   disk_type             = "NEW"
-  #   storage_workload_type = "OLTP"
-  # }
-
   default = null
 
   type = object({
@@ -556,17 +551,17 @@ variable "storage_configuration" {
   }
   validation {
     condition = var.storage_configuration == null ? true : (var.storage_configuration.log_settings == null ? true : (
-    length(var.storage_configuration.log_settings.luns) > 0 && var.storage_configuration.log_settings.disk_size_gb != null
-    ||
-    length(var.storage_configuration.log_settings.luns) == 0 && var.storage_configuration.log_settings.disk_size_gb == null
+      length(var.storage_configuration.log_settings.luns) > 0 && var.storage_configuration.log_settings.disk_size_gb != null
+      ||
+      length(var.storage_configuration.log_settings.luns) == 0 && var.storage_configuration.log_settings.disk_size_gb == null
     ))
     error_message = "If var.storage_configuration.log_settings.luns is provided you must provide the var.storage_configuration.log_settings.disk_size_gb too. If var.storage_configuration.log_settings.luns is not provided please leave the var.storage_configuration.log_settings.disk_size_gb empty too."
   }
   validation {
     condition = var.storage_configuration == null ? true : (var.storage_configuration.data_settings == null ? true : (
-    length(var.storage_configuration.data_settings.luns) > 0 && var.storage_configuration.data_settings.disk_size_gb != null
-    ||
-    length(var.storage_configuration.data_settings.luns) == 0 && var.storage_configuration.data_settings.disk_size_gb == null
+      length(var.storage_configuration.data_settings.luns) > 0 && var.storage_configuration.data_settings.disk_size_gb != null
+      ||
+      length(var.storage_configuration.data_settings.luns) == 0 && var.storage_configuration.data_settings.disk_size_gb == null
     ))
     error_message = "If var.storage_configuration.data_settings.luns is provided you must provide the var.storage_configuration.data_settings.disk_size_gb too. If var.storage_configuration.data_settings.luns is not provided please leave the var.storage_configuration.data_settings.disk_size_gb empty too."
   }

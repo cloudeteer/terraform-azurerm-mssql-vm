@@ -8,7 +8,6 @@
 # terraform-module-template
 
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)]
-[![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.0.0-%23E05735)]
 
 Terraform Module Template
 
@@ -25,7 +24,7 @@ terraform {
       version = "~> 4.0"
     }
     time = {
-      source = "hashicorp/time"
+      source  = "hashicorp/time"
       version = "0.12.1"
     }
   }
@@ -33,7 +32,6 @@ terraform {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  subscription_id                 = "cefa63e8-d357-497a-a4eb-1acf2051b48f"
   resource_provider_registrations = "none" # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
   features {}
 }
@@ -90,7 +88,7 @@ resource "azurerm_backup_policy_vm" "example" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "example" {
-  name                = "kv-example-dev-we-04"
+  name                = "kv-example-dev-we-99"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -109,25 +107,27 @@ resource "azurerm_key_vault" "example" {
 module "mssql_azure_vm" {
   source = "../../"
 
-  data_disks = [
-    {
-      lun              = 0
-      disk_size_gb     = 64
-      sql_storage_type = "data"
-    },
-    {
-      lun              = 1
-      disk_size_gb     = 64
-      sql_storage_type = "log"
-    },
-    {
-      lun              = 2
-      disk_size_gb     = 64
-      sql_storage_type = "temp_db"
-    }
-  ]
+  storage_configuration = {
+    disk_type                      = "NEW"
+    storage_workload_type          = "OLTP"
+    system_db_on_data_disk_enabled = false
 
-  temp_db_settings_default_file_path = "D:\\tempDB"
+    data_settings = {
+      luns              = [0]
+      disk_size_gb      = 64
+      default_file_path = "F:\\data"
+    }
+    log_settings = {
+      luns              = [1]
+      disk_size_gb      = 64
+      default_file_path = "G:\\log"
+    }
+    temp_db_settings = {
+      luns              = [2]
+      disk_size_gb      = 64
+      default_file_path = "H:\\tempDb"
+    }
+  }
 
   backup_policy_id          = azurerm_backup_policy_vm.example.id
   key_vault_id              = azurerm_key_vault.example.id
@@ -137,6 +137,7 @@ module "mssql_azure_vm" {
   subnet_id                 = azurerm_subnet.example.id
   max_server_memory_percent = 70
 }
+
 ```
 
 ## Providers
@@ -322,43 +323,6 @@ Description: Specifies the hostname to use for this virtual machine. If unspecif
 Type: `string`
 
 Default: `null`
-
-### <a name="input_data_disks"></a> [data\_disks](#input\_data\_disks)
-
-Description: Additional disks to be attached to the virtual machine.
-
-Required parameters:
-
-Parameter | Description
--- | --
-`disk_size_gb` | Specifies the size of the managed disk to create in gigabytes.
-`lun` | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine.
-`sql_storage_type` |
-
-Optional parameters:
-
-Parameter | Description
--- | --
-`caching` | Specifies the caching requirements for this Data Disk. Possible values include `None`, `ReadOnly` and `ReadWrite`.
-`create_option` | The method to use when creating the managed disk. Possible values include: `Empty` - Create an empty managed disk.
-`name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
-`storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
-
-Type:
-
-```hcl
-list(object({
-    caching              = optional(string, "ReadWrite")
-    create_option        = optional(string, "Empty")
-    disk_size_gb         = number
-    lun                  = number
-    name                 = optional(string)
-    storage_account_type = optional(string, "Premium_LRS")
-    sql_storage_type     = optional(string)
-  }))
-```
-
-Default: `[]`
 
 ### <a name="input_days_of_week"></a> [days\_of\_week](#input\_days\_of\_week)
 
@@ -715,45 +679,61 @@ Type: `string`
 
 Default: `"PAYG"`
 
-### <a name="input_storage_configuration_data_settings_default_file_path"></a> [storage\_configuration\_data\_settings\_default\_file\_path](#input\_storage\_configuration\_data\_settings\_default\_file\_path)
+### <a name="input_storage_configuration"></a> [storage\_configuration](#input\_storage\_configuration)
 
-Description: The default file path for the data settings in the storage configuration.
+Description: n/a
 
-Type: `string`
+Type:
 
-Default: `"G:\\data"`
+```hcl
+object({
+    disk_type                      = string
+    storage_workload_type          = string
+    system_db_on_data_disk_enabled = optional(bool, false)
 
-### <a name="input_storage_configuration_disk_type"></a> [storage\_configuration\_disk\_type](#input\_storage\_configuration\_disk\_type)
+    data_settings = optional(object({
+      default_file_path = string
+      luns              = optional(list(number), [])
 
-Description: The type of disk configuration to apply to the SQL Server. Valid values include NEW, EXTEND, or ADD
+      # disk settings
+      disk_size_gb = optional(number)
 
-Type: `string`
+      caching = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+    }))
 
-Default: `"NEW"`
+    log_settings = optional(object({
+      default_file_path = string
+      luns              = optional(list(number), [])
 
-### <a name="input_storage_configuration_log_settings_default_file_path"></a> [storage\_configuration\_log\_settings\_default\_file\_path](#input\_storage\_configuration\_log\_settings\_default\_file\_path)
+      # disk settings
+      disk_size_gb = optional(number)
+      caching      = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+    }))
 
-Description: The default file path for the log settings in the storage configuration.
+    temp_db_settings = optional(object({
+      default_file_path = string
+      luns              = optional(list(number), [])
 
-Type: `string`
+      data_file_count        = optional(number, 8)
+      data_file_size_mb      = optional(number, 256)
+      data_file_growth_in_mb = optional(number, 512)
+      log_file_size_mb       = optional(number, 256)
+      log_file_growth_mb     = optional(number, 512)
 
-Default: `"H:\\log"`
+      # disk settings
+      disk_size_gb = optional(number)
+      caching      = optional(string, "ReadWrite")
+      # create_option        = "Empty" ? related to disk_type ?
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
+    }))
+  })
+```
 
-### <a name="input_storage_configuration_storage_workload_type"></a> [storage\_configuration\_storage\_workload\_type](#input\_storage\_configuration\_storage\_workload\_type)
-
-Description: The type of storage workload. Valid values include GENERAL, OLTP, or DW.
-
-Type: `string`
-
-Default: `"OLTP"`
-
-### <a name="input_storage_configuration_system_db_on_data_disk_enabled"></a> [storage\_configuration\_system\_db\_on\_data\_disk\_enabled](#input\_storage\_configuration\_system\_db\_on\_data\_disk\_enabled)
-
-Description: Specifies whether to set system databases (except tempDb) location to newly created data storage. Possible values are true and false. Defaults to false.
-
-Type: `bool`
-
-Default: `false`
+Default: `null`
 
 ### <a name="input_store_secret_in_key_vault"></a> [store\_secret\_in\_key\_vault](#input\_store\_secret\_in\_key\_vault)
 
@@ -786,14 +766,6 @@ Description: A mapping of tags which should be assigned to the Virtual Machine. 
 Type: `map(string)`
 
 Default: `{}`
-
-### <a name="input_temp_db_settings_default_file_path"></a> [temp\_db\_settings\_default\_file\_path](#input\_temp\_db\_settings\_default\_file\_path)
-
-Description: (Required) The SQL Server default path
-
-Type: `string`
-
-Default: `"I:\\tempDb"`
 
 ### <a name="input_timezone"></a> [timezone](#input\_timezone)
 

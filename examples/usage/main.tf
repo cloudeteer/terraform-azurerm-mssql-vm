@@ -88,50 +88,26 @@ resource "azurerm_key_vault" "example" {
 module "mssql_azure_vm" {
   source = "../../"
 
-  # storage_configuration = {
-  #   disk_type                      = "NEW"
-  #   storage_workload_type          = "OLTP"
-  #   system_db_on_data_disk_enabled = false
+  storage_configuration = {
+    disk_type                      = "NEW"
+    storage_workload_type          = "OLTP"
+    system_db_on_data_disk_enabled = false
 
-  #   data_settings = {
-  #     luns              = [0]
-  #     disk_size_gb      = 64
-  #     default_file_path = "F:\\data"
-  #   }
-  #   log_settings = {
-  #     luns              = [1]
-  #     disk_size_gb      = 64
-  #     default_file_path = "G:\\log"
-  #   }
-  #   temp_db_settings = {
-  #     luns              = [2]
-  #     default_file_path = "H:\\tempDb"
-  #   }
-  # }
-
-  # storage_configuration = {
-  #   disk_type                      = "NEW"
-  #   storage_workload_type          = "OLTP"
-  #   system_db_on_data_disk_enabled = false
-
-  #   data_settings = {
-  #     luns              = [0, 1]
-  #     disk_size_gb      = 64
-  #     default_file_path = "F:\\data"
-  #   }
-  #   log_settings = {
-  #     luns              = [2, 3]
-  #     disk_size_gb      = 64
-  #     default_file_path = "G:\\log"
-  #   }
-  #   temp_db_settings = {
-  #     luns              = [4,5]
-  #     default_file_path = "H:\\tempDb"
-  #   }
-  # }
-
-  identity = {
-    type = "SystemAssigned"
+    data_settings = {
+      luns              = [0]
+      disk_size_gb      = 64
+      default_file_path = "F:\\data"
+    }
+    log_settings = {
+      luns              = [1]
+      disk_size_gb      = 64
+      default_file_path = "G:\\log"
+    }
+    temp_db_settings = {
+      luns              = [2]
+      disk_size_gb      = 64
+      default_file_path = "H:\\tempDb"
+    }
   }
 
   backup_policy_id          = azurerm_backup_policy_vm.example.id
@@ -142,3 +118,4 @@ module "mssql_azure_vm" {
   subnet_id                 = azurerm_subnet.example.id
   max_server_memory_percent = 70
 }
+
