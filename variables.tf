@@ -512,7 +512,8 @@ variable "storage_configuration" {
 
       # disk settings
       disk_size_gb = optional(number)
-      caching      = optional(string, "ReadWrite")
+
+      caching = optional(string, "ReadWrite")
       # create_option        = "Empty" ? related to disk_type ?
       storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
     }))
@@ -542,9 +543,33 @@ variable "storage_configuration" {
       disk_size_gb = optional(number)
       caching      = optional(string, "ReadWrite")
       # create_option        = "Empty" ? related to disk_type ?
-      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
+      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
     }))
   })
+  validation {
+    condition = var.storage_configuration == null ? true : (var.storage_configuration.temp_db_settings == null ? true : (
+      length(var.storage_configuration.temp_db_settings.luns) > 0 && var.storage_configuration.temp_db_settings.disk_size_gb != null
+      ||
+      length(var.storage_configuration.temp_db_settings.luns) == 0 && var.storage_configuration.temp_db_settings.disk_size_gb == null
+    ))
+    error_message = "If var.storage_configuration.temp_db_settings.luns is provided you must provide the var.storage_configuration.temp_db_settings.disk_size_gb too. If var.storage_configuration.temp_db_settings.luns is not provided please leave the var.storage_configuration.temp_db_settings.disk_size_gb empty too."
+  }
+  validation {
+    condition = var.storage_configuration == null ? true : (var.storage_configuration.log_settings == null ? true : (
+    length(var.storage_configuration.log_settings.luns) > 0 && var.storage_configuration.log_settings.disk_size_gb != null
+    ||
+    length(var.storage_configuration.log_settings.luns) == 0 && var.storage_configuration.log_settings.disk_size_gb == null
+    ))
+    error_message = "If var.storage_configuration.log_settings.luns is provided you must provide the var.storage_configuration.log_settings.disk_size_gb too. If var.storage_configuration.log_settings.luns is not provided please leave the var.storage_configuration.log_settings.disk_size_gb empty too."
+  }
+  validation {
+    condition = var.storage_configuration == null ? true : (var.storage_configuration.data_settings == null ? true : (
+    length(var.storage_configuration.data_settings.luns) > 0 && var.storage_configuration.data_settings.disk_size_gb != null
+    ||
+    length(var.storage_configuration.data_settings.luns) == 0 && var.storage_configuration.data_settings.disk_size_gb == null
+    ))
+    error_message = "If var.storage_configuration.data_settings.luns is provided you must provide the var.storage_configuration.data_settings.disk_size_gb too. If var.storage_configuration.data_settings.luns is not provided please leave the var.storage_configuration.data_settings.disk_size_gb empty too."
+  }
 }
 
 variable "store_secret_in_key_vault" {

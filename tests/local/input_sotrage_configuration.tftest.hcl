@@ -49,6 +49,7 @@ run "should_succeed_with_each_one_disk" {
       }
       temp_db_settings = {
         luns              = [2]
+        disk_size_gb      = 64
         default_file_path = "H:\\tempDb"
       }
     }
@@ -76,6 +77,7 @@ run "should_succeed_with_each_multiple_disks" {
       }
       temp_db_settings = {
         luns              = [6, 7, 8]
+        disk_size_gb      = 64
         default_file_path = "H:\\tempDb"
       }
     }
@@ -92,15 +94,12 @@ run "should_succeed_with_no_disks" {
       system_db_on_data_disk_enabled = false
 
       data_settings = {
-        luns              = []
         default_file_path = "D:\\data"
       }
       log_settings = {
-        luns              = []
         default_file_path = "D:\\log"
       }
       temp_db_settings = {
-        luns              = []
         default_file_path = "D:\\tempDb"
       }
     }
