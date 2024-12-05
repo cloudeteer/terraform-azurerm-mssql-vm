@@ -1,18 +1,23 @@
 name: module-ci
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0" # weekly on Sunday at 00:00
   pull_request:
     types:
       - opened
       - edited
       - synchronize
-      - labeled
-      - unlabeled
+      - ready_for_review
+
 jobs:
   module-ci:
-    uses: cloudeteer/terraform-governance/.github/workflows/module-ci.yaml@349-epic-the-revival-of-tf-mod-lib
+    uses: cloudeteer/terraform-governance/.github/workflows/module-ci.yaml@main
     permissions:
-      contents: write
-      pull-requests: read
+      contents: read
+      issues: write
+      id-token: write
+    secrets:
+      ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
