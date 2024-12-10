@@ -419,6 +419,16 @@ Valid URN aliases are:
 - `Win2012R2Datacenter`
 - `Win2012Datacenter`
 
+Alternative SQL Images:
+- `MicrosoftSQLServer:sql2022-sles15:enterprise-gen2:latest`
+- `MicrosoftSQLServer:sql2022-sles15:sqldev-gen2:latest`
+- `MicrosoftSQLServer:sql2022-sles15:standard-gen2:latest`
+- `MicrosoftSQLServer:sql2022-sles15:web-gen2:latest`
+- `MicrosoftSQLServer:sql2022-ws2022:enterprise-gen2:latest`
+- `MicrosoftSQLServer:sql2022-ws2022:sqldev-gen2:latest`
+- `MicrosoftSQLServer:sql2022-ws2022:standard-gen2:latest`
+- `MicrosoftSQLServer:sql2022-ws2022:web-gen2:latest`
+
 Type: `string`
 
 Default: `"MicrosoftSQLServer:sql2022-ws2022:standard-gen2:latest"`
