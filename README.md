@@ -421,7 +421,7 @@ Valid URN aliases are:
 
 Type: `string`
 
-Default: `"MicrosoftSQLServer:SQL2019-WS2019:standard-gen2:latest"`
+Default: `"MicrosoftSQLServer:sql2022-ws2022:standard-gen2:latest"`
 
 ### <a name="input_key_vault_id"></a> [key\_vault\_id](#input\_key\_vault\_id)
 
