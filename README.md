@@ -137,7 +137,6 @@ module "mssql_azure_vm" {
   subnet_id                 = azurerm_subnet.example.id
   max_server_memory_percent = 70
 }
-
 ```
 
 ## Providers
@@ -681,7 +680,7 @@ Default: `"PAYG"`
 
 ### <a name="input_storage_configuration"></a> [storage\_configuration](#input\_storage\_configuration)
 
-Description: n/a
+Description: # TODO
 
 Type:
 

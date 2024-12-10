@@ -118,4 +118,3 @@ module "mssql_azure_vm" {
   subnet_id                 = azurerm_subnet.example.id
   max_server_memory_percent = 70
 }
-

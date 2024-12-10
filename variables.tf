@@ -255,32 +255,6 @@ variable "image" {
   default = "MicrosoftSQLServer:SQL2019-WS2019:Standard:latest"
 }
 
-# variable "key_vault_credential_key_vault_url" {
-#   description = "The URL of the Azure Key Vault to store credentials."
-#   type        = string
-# }
-#
-# variable "key_vault_credential_name" {
-#   description = "The name of the Key Vault credential."
-#   type        = string
-# }
-#
-# variable "key_vault_credential_service_principal_name" {
-#   description = "The service principal name for accessing the Key Vault."
-#   type        = string
-# }
-#
-# variable "key_vault_credential_service_principal_secret" {
-#   description = "The secret for the service principal to access the Key Vault."
-#   type        = string
-# }
-
-variable "r_services_enabled" {
-  description = "Enable or disable R services for the MSSQL virtual machine."
-  type        = bool
-  default     = null
-}
-
 variable "key_vault_id" {
   description = "Key Vault ID to store the generated admin password. Required when admin_password is not set."
   default     = null
@@ -393,6 +367,12 @@ variable "private_ip_address" {
   type        = string
 }
 
+variable "r_services_enabled" {
+  description = "Enable or disable R services for the MSSQL virtual machine."
+  type        = bool
+  default     = null
+}
+
 variable "resource_group_name" {
   description = "The name of the resource group to deploy the MSSQL server. This should match the resource group used in the Virtual Machine module to ensure all related resources are managed within the same group."
   type        = string
@@ -490,9 +470,10 @@ variable "sql_license_type" {
 }
 
 variable "storage_configuration" {
-  #   description = <<-EOT
-  #   EOT
-  #   #TODO: Change description
+  description = <<-EOT
+    # TODO
+  EOT
+
 
   default = null
 
