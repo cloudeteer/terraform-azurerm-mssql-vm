@@ -1,6 +1,6 @@
 module "azurerm_virtual_machine" {
   source  = "cloudeteer/vm/azurerm"
-  version = "0.0.14"
+  version = "0.0.20"
 
   image    = var.image
   location = var.location

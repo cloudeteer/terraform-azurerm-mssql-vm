@@ -104,9 +104,9 @@ module "example" {
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 4.0)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 4.1)
 
-- <a name="provider_time"></a> [time](#provider\_time) (0.12.1)
+- <a name="provider_time"></a> [time](#provider\_time) (>= 0.4)
 
 ## Modules
 
@@ -116,14 +116,14 @@ The following Modules are called:
 
 Source: cloudeteer/vm/azurerm
 
-Version: 0.0.14
+Version: 0.0.20
 
 ## Resources
 
 The following resources are used by this module:
 
 - [azurerm_mssql_virtual_machine.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_virtual_machine) (resource)
-- [time_sleep.wait_60_seconds](https://registry.terraform.io/providers/hashicorp/time/0.12.1/docs/resources/sleep) (resource)
+- [time_sleep.wait_60_seconds](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
 
 
 ## Optional Inputs
