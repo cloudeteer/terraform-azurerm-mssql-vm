@@ -106,7 +106,7 @@ The following providers are used by this module:
 
 - <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 4.1)
 
-- <a name="provider_time"></a> [time](#provider\_time) (>= 0.4)
+- <a name="provider_time"></a> [time](#provider\_time) (>= 0.12)
 
 ## Modules
 
