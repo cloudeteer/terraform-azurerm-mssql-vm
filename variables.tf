@@ -269,7 +269,7 @@ variable "image" {
   EOT
 
   type    = string
-  default = "MicrosoftSQLServer:SQL2019-WS2019:Standard:latest"
+  default = "MicrosoftSQLServer:SQL2019-WS2019:standard-gen2:latest"
 }
 
 variable "key_vault_id" {
