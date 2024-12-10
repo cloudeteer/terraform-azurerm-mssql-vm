@@ -17,48 +17,29 @@ Terraform Module Template
 This example demonstrates the usage of this Terraform module with default settings.
 
 ```hcl
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.0"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "0.12.1"
-    }
-  }
-}
-
-# Configure the Microsoft Azure Provider
-provider "azurerm" {
-  resource_provider_registrations = "none" # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
-  features {}
-}
-
-# Create a resource group
 resource "azurerm_resource_group" "example" {
-  name     = "rg-mssql-module-test"
-  location = "Germany West Central"
+  name     = "rg-example-dev-euw-01"
+  location = "westeurope"
 }
 
-# Create a virtual network within the resource group
 resource "azurerm_virtual_network" "example" {
-  name                = "vnet-mssql-module-test"
-  resource_group_name = azurerm_resource_group.example.name
+  name                = "vnet-example-dev-euw-01"
   location            = azurerm_resource_group.example.location
-  address_space       = ["10.0.0.0/16"]
+  resource_group_name = azurerm_resource_group.example.name
+
+  address_space = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "example" {
-  address_prefixes     = azurerm_virtual_network.example.address_space
-  name                 = "snet-mssql-module-test"
-  resource_group_name  = azurerm_virtual_network.example.resource_group_name
+  name                = "snet-example-dev-euw-01"
+  resource_group_name = azurerm_resource_group.example.name
+
+  address_prefixes     = ["10.0.2.0/24"]
   virtual_network_name = azurerm_virtual_network.example.name
 }
 
 resource "azurerm_recovery_services_vault" "example" {
-  name                = "rsv-example-dev-we-01"
+  name                = "rsv-example-dev-euw-01"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -68,7 +49,7 @@ resource "azurerm_recovery_services_vault" "example" {
 }
 
 resource "azurerm_backup_policy_vm" "example" {
-  name                = "bkpvm-example-dev-we-01"
+  name                = "bkpvm-example-dev-euw-01"
   resource_group_name = azurerm_resource_group.example.name
 
   policy_type         = "V2"
@@ -88,7 +69,7 @@ resource "azurerm_backup_policy_vm" "example" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "example" {
-  name                = "kv-example-dev-we-99"
+  name                = "kv-example-dev-euw-01"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
 
@@ -104,38 +85,18 @@ resource "azurerm_key_vault" "example" {
   }
 }
 
-module "mssql_azure_vm" {
-  source = "../../"
+module "example" {
+  source = "cloudeteer/mssql-vm/azurerm"
 
-  storage_configuration = {
-    disk_type                      = "NEW"
-    storage_workload_type          = "OLTP"
-    system_db_on_data_disk_enabled = false
+  name                = "vm-example-dev-euw-01"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 
-    data_settings = {
-      luns              = [0]
-      disk_size_gb      = 64
-      default_file_path = "F:\\data"
-    }
-    log_settings = {
-      luns              = [1]
-      disk_size_gb      = 64
-      default_file_path = "G:\\log"
-    }
-    temp_db_settings = {
-      luns              = [2]
-      disk_size_gb      = 64
-      default_file_path = "H:\\tempDb"
-    }
-  }
+  backup_policy_id = azurerm_backup_policy_vm.example.id
+  key_vault_id     = azurerm_key_vault.example.id
+  subnet_id        = azurerm_subnet.example.id
 
-  backup_policy_id          = azurerm_backup_policy_vm.example.id
-  key_vault_id              = azurerm_key_vault.example.id
-  location                  = azurerm_resource_group.example.location
-  name                      = "example"
-  resource_group_name       = azurerm_resource_group.example.name
-  subnet_id                 = azurerm_subnet.example.id
-  max_server_memory_percent = 70
+  computer_name = "example"
 }
 ```
 
