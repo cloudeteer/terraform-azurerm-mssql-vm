@@ -284,6 +284,14 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_create_public_ip_address"></a> [create\_public\_ip\_address](#input\_create\_public\_ip\_address)
+
+Description: If set to `true` a Azure public IP address will be created and assigned to the default network interface.
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_days_of_week"></a> [days\_of\_week](#input\_days\_of\_week)
 
 Description: A list of days on which backup can take place. Possible values are Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday
@@ -327,6 +335,16 @@ Default: `true`
 ### <a name="input_enable_sql_instance"></a> [enable\_sql\_instance](#input\_enable\_sql\_instance)
 
 Description: A boolean flag to enable or disable the SQL instance configuration.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_encryption_at_host_enabled"></a> [encryption\_at\_host\_enabled](#input\_encryption\_at\_host\_enabled)
+
+Description: Should all of the disks (including the temp disk) attached to this Virtual Machine be encrypted by enabling Encryption at Host?
+
+**NOTE**: Requires `Microsoft.Compute/EncryptionAtHost` to be enabled at the subscription level.
 
 Type: `bool`
 
@@ -538,6 +556,14 @@ Type: `string`
 
 Default: `null`
 
+### <a name="input_secure_boot_enabled"></a> [secure\_boot\_enabled](#input\_secure\_boot\_enabled)
+
+Description: Specifies whether secure boot should be enabled on the virtual machine.
+
+Type: `bool`
+
+Default: `true`
+
 ### <a name="input_size"></a> [size](#input\_size)
 
 Description: The [SKU](https://cloudprice.net/) to use for this virtual machine.
@@ -734,6 +760,14 @@ Description: Specifies the Time Zone which should be used by the Virtual Machine
 Type: `string`
 
 Default: `null`
+
+### <a name="input_vtpm_enabled"></a> [vtpm\_enabled](#input\_vtpm\_enabled)
+
+Description: Specifies if vTPM (virtual Trusted Platform Module) and Trusted Launch is enabled for the Virtual Machine.
+
+Type: `bool`
+
+Default: `true`
 
 ### <a name="input_zone"></a> [zone](#input\_zone)
 

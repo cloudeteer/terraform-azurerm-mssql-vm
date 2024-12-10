@@ -140,6 +140,12 @@ variable "computer_name" {
   #   }
 }
 
+variable "create_public_ip_address" {
+  description = "If set to `true` a Azure public IP address will be created and assigned to the default network interface."
+  default     = false
+  type        = bool
+}
+
 variable "days_of_week" {
   description = "A list of days on which backup can take place. Possible values are Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday"
   type        = string
@@ -175,6 +181,17 @@ variable "enable_sql_instance" {
   description = "A boolean flag to enable or disable the SQL instance configuration."
   type        = bool
   default     = true
+}
+
+variable "encryption_at_host_enabled" {
+  description = <<-EOT
+    Should all of the disks (including the temp disk) attached to this Virtual Machine be encrypted by enabling Encryption at Host?
+
+    **NOTE**: Requires `Microsoft.Compute/EncryptionAtHost` to be enabled at the subscription level.
+  EOT
+
+  type    = bool
+  default = true
 }
 
 variable "extensions" {
@@ -379,6 +396,13 @@ variable "resource_group_name" {
   default     = null
 }
 
+variable "secure_boot_enabled" {
+  description = "Specifies whether secure boot should be enabled on the virtual machine."
+
+  type    = bool
+  default = true
+}
+
 variable "size" {
   description = <<-EOT
     The [SKU](https://cloudprice.net/) to use for this virtual machine.
@@ -579,6 +603,13 @@ variable "timezone" {
 
   type    = string
   default = null
+}
+
+variable "vtpm_enabled" {
+  description = "Specifies if vTPM (virtual Trusted Platform Module) and Trusted Launch is enabled for the Virtual Machine."
+
+  type    = bool
+  default = true
 }
 
 variable "zone" {
