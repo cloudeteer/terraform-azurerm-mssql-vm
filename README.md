@@ -5,11 +5,9 @@
 
 ---
 
-# terraform-module-template
+# terraform-azurerm-mssql-vm
 
-[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)]
-
-Terraform Module Template
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-blue.svg)](https://github.com/cloudeteer/terraform-module-template/releases)
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
