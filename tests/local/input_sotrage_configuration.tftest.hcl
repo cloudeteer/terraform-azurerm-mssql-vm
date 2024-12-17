@@ -12,6 +12,13 @@ variables {
   subnet_id        = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/rg/providers/Microsoft.Network/virtualNetworks/vnet/subnets/snet"
 }
 
+override_module {
+  target = module.azurerm_virtual_machine
+  outputs = {
+    id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/RG-OVERRIDE/providers/Microsoft.Compute/virtualMachines/VM-OVERRIDE"
+  }
+}
+
 run "should_succeed_with_no_storage_configuration" {
   command = plan
 }
