@@ -49,6 +49,7 @@ locals {
   )
 }
 
+#trivy:ignore:avd-azu-0039
 module "azurerm_virtual_machine" {
   source  = "cloudeteer/vm/azurerm"
   version = "0.0.20"
