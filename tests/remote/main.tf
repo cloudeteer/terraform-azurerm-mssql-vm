@@ -61,17 +61,3 @@ module "tftest" {
 
   computer_name = "tftest"
 }
-
-module "tftest" {
-  source = "../.."
-
-  name                = "vm-tftest-dev-euw-${random_string.tftest.result}"
-  location            = azurerm_resource_group.tftest.location
-  resource_group_name = azurerm_resource_group.tftest.name
-
-  backup_policy_id = local.backup_policy_id
-  key_vault_id     = local.key_vault_id
-  subnet_id        = local.subnet_id
-
-  computer_name = "tftest"
-}
