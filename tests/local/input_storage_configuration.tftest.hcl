@@ -172,7 +172,7 @@ run "should_fail_" {
 }
 
 
-run "should_fail_on_wrong_file_path" {
+run "should_fail_with_disk_size_but_no_lun_on_log_settings" {
   command = plan
 
   variables {
@@ -187,6 +187,7 @@ run "should_fail_on_wrong_file_path" {
         default_file_path = "D:\\data"
       }
       log_settings = {
+        # If no luns are provided, disk_size_gb should not be set
         luns              = []
         disk_size_gb      = 64
         default_file_path = "G:\\log"
