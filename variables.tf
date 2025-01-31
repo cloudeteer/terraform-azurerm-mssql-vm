@@ -103,11 +103,6 @@ variable "backup_policy_id" {
   description = "The ID of the backup policy to use."
   type        = string
   default     = null
-
-  #   validation {
-  #     condition     = (var.enable_backup_protected_vm && var.backup_policy_id != null) || !var.enable_backup_protected_vm
-  #     error_message = "A backup policy ID is required when backup_protected_vm.enabled is true."
-  #   }
 }
 
 variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
@@ -133,11 +128,6 @@ variable "computer_name" {
     condition     = var.computer_name != null ? length(var.computer_name) <= 15 : true
     error_message = "Windows computer name can be at most 15 characters."
   }
-
-  #   validation {
-  #     condition     = var.computer_name == null ? length(var.name) <= 15 : true
-  #     error_message = "Windows computer name can be at most 15 characters. Variable \"computer_name\" is not set, falling back to \"name\" which is ${length(var.name)} chatacters long. Set \"computer_name\" explicitly."
-  #   }
 }
 
 variable "create_public_ip_address" {
@@ -286,15 +276,6 @@ variable "key_vault_id" {
   description = "Key Vault ID to store the generated admin password. Required when admin_password is not set."
   default     = null
   type        = string
-
-  # validation {
-  #   condition = var.key_vault_id == null ? (
-  #     (var.authentication_type == "Password" && var.admin_password != null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key != null)
-  #     ) : (
-  #     (var.authentication_type == "Password" && var.admin_password == null) || (var.authentication_type == "SSH" && var.admin_ssh_public_key == null)
-  #   )
-  #   error_message = "Invalid combination of key_vault_id, admin_password, and admin_ssh_public_key. If key_vault_id is null, admin_password or admin_ssh_public_key must be non-null. If key_vault_id is not null, admin_password and admin_ssh_public_key must be null."
-  # }
 }
 
 variable "location" {

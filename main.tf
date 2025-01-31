@@ -149,16 +149,6 @@ resource "azurerm_mssql_virtual_machine" "this" {
     }
   }
 
-  #   dynamic "key_vault_credential" {
-  #     for_each = var.enable_key_vault_credential ? [true] : []
-  #     content {
-  #       key_vault_url            = var.key_vault_credential_key_vault_url
-  #       name                     = var.key_vault_credential_name
-  #       service_principal_name   = var.key_vault_credential_service_principal_name
-  #       service_principal_secret = var.key_vault_credential_service_principal_secret
-  #     }
-  #   }
-
   dynamic "storage_configuration" {
     for_each = var.storage_configuration != null ? [true] : []
     content {
