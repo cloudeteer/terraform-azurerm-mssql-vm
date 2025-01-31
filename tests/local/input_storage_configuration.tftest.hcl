@@ -142,7 +142,7 @@ run "should_fail_on_missing_disk_size_when_lun_is_defined" {
   expect_failures = [var.storage_configuration]
 }
 
-run "should_fail_" {
+run "should_fail_with_disk_size_but_no_lun_on_data_settings" {
   command = plan
 
   variables {
@@ -152,6 +152,7 @@ run "should_fail_" {
       system_db_on_data_disk_enabled = false
 
       data_settings = {
+        # If no luns are provided, disk_size_gb should not be set
         luns              = []
         disk_size_gb      = 64
         default_file_path = "D:\\data"
