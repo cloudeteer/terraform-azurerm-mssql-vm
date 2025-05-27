@@ -1,5 +1,8 @@
 locals {
+  # Combine data disk configurations from the input variable var.data_disk and those generated from
+  # var.storage_configuration for data, log, and tempdb settings.
   data_disks = concat(
+    var.data_disks,
     [
       for item in try(var.storage_configuration.data_settings.luns, []) : {
         lun                  = item
@@ -23,7 +26,7 @@ locals {
         caching              = var.storage_configuration.temp_db_settings.caching
         storage_account_type = var.storage_configuration.temp_db_settings.storage_account_type
       }
-    ]
+    ],
   )
 
   # Calculate max_server_memory_mb based on percentage of total memory if provided, otherwise use the absolute value

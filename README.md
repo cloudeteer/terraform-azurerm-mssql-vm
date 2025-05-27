@@ -190,6 +190,43 @@ Type: `bool`
 
 Default: `false`
 
+### <a name="input_data_disks"></a> [data\_disks](#input\_data\_disks)
+
+Description: Additional disks to be attached to the virtual machine.
+
+Required parameters:
+
+Parameter | Description
+-- | --
+`disk_size_gb` | Specifies the size of the managed disk to create in gigabytes.
+`lun` | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine.
+
+Optional parameters:
+
+Parameter | Description
+-- | --
+`caching` | Specifies the caching requirements for this Data Disk. Possible values include `None`, `ReadOnly` and `ReadWrite`.
+`create_option` | The method to use when creating the managed disk. Possible values include: `Empty` - Create an empty managed disk. `Copy` - Copy an existing managed disk or snapshot (specified with `source_resource_id`). `Restore` - Set by Azure Backup or Site Recovery on a restored disk (specified with `source_resource_id`).
+`name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
+`source_resource_id` | The ID of an existing Managed Disk or Snapshot to copy when `create_option` is `Cop`y or the recovery point to restore when `create_option` is `Restore`.
+`storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
+
+Type:
+
+```hcl
+list(object({
+    caching              = optional(string, "ReadWrite")
+    create_option        = optional(string, "Empty")
+    disk_size_gb         = number
+    lun                  = number
+    name                 = optional(string)
+    source_resource_id   = optional(string)
+    storage_account_type = optional(string, "Premium_LRS")
+  }))
+```
+
+Default: `[]`
+
 ### <a name="input_enable_automatic_updates"></a> [enable\_automatic\_updates](#input\_enable\_automatic\_updates)
 
 Description: Specifies whether Automatic Updates are enabled for Windows Virtual Machines. This feature is not supported on Linux Virtual Machines.
