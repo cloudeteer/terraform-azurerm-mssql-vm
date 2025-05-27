@@ -10,110 +10,10 @@ variable "admin_username" {
   type        = string
 }
 
-variable "allow_extension_operations" {
-  description = "Should Extension Operations be allowed on this Virtual Machine?"
-  type        = bool
-  default     = true
-}
-
-variable "auto_backup_encryption_enabled" {
-  description = "A boolean flag to specify whether encryption is enabled for backups."
-  type        = bool
-  default     = false
-}
-
-variable "auto_backup_encryption_password" {
-  description = "The password used to encrypt backups if encryption is enabled. Must be specified when encryption is enabled."
-  type        = string
-  default     = ""
-  sensitive   = true
-  validation {
-    condition     = var.auto_backup_encryption_password != "" || !var.enable_auto_backup
-    error_message = "Encryption password must be provided when auto backup is enabled."
-  }
-}
-
-variable "auto_backup_manual_schedule_full_backup_frequency" {
-  description = "Frequency of full backups. Possible values: 'Daily', 'Weekly'."
-  type        = string
-  default     = "Weekly"
-}
-
-variable "auto_backup_manual_schedule_full_backup_start_hour" {
-  description = "The hour of the day to start full backups, in 24-hour format (0-23)."
-  type        = number
-  default     = null
-}
-
-variable "auto_backup_manual_schedule_full_backup_window_in_hours" {
-  description = "The number of hours the full backup operation can run."
-  type        = number
-  default     = null
-}
-
-variable "auto_backup_manual_schedule_log_backup_frequency_in_minutes" {
-  description = "Frequency of log backups, in minutes. Valid values are from 5 to 60."
-  type        = number
-  default     = 5
-}
-
-variable "auto_backup_retention_period_in_days" {
-  description = "The number of days to retain backups for the SQL virtual machine."
-  type        = number
-  default     = null
-}
-
-variable "auto_backup_storage_account_access_key" {
-  description = "The access key for the storage account to store SQL Server backups."
-  type        = string
-  default     = null
-}
-
-variable "auto_backup_storage_blob_endpoint" {
-  description = "The storage blob endpoint for the backup of the SQL virtual machine."
-  type        = string
-  default     = null
-}
-
-variable "auto_backup_system_databases_backup_enabled" {
-  description = "A boolean flag to specify whether system databases are included in the backup."
-  type        = bool
-  default     = false
-}
-
-variable "auto_patching_day_of_week" {
-  description = "The day of the week for auto patching. Possible values: 'Sunday', 'Monday', etc."
-  type        = string
-  default     = null
-}
-
-variable "auto_patching_maintenance_window_duration_in_minutes" {
-  description = "The duration of the maintenance window in minutes for auto patching."
-  type        = number
-  default     = null
-}
-
-variable "auto_patching_maintenance_window_starting_hour" {
-  description = "The starting hour (0-23) of the maintenance window for auto patching."
-  type        = number
-  default     = null
-}
-
 variable "backup_policy_id" {
   description = "The ID of the backup policy to use."
   type        = string
   default     = null
-}
-
-variable "bypass_platform_safety_checks_on_user_schedule_enabled" {
-  description = <<-EOT
-    Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM.
-
-    **NOTE**: Can only be set to true when `patch_mode` is set to `AutomaticByPlatform`.
-  EOT
-
-  type    = bool
-  default = true
 }
 
 variable "computer_name" {
@@ -136,22 +36,39 @@ variable "create_public_ip_address" {
   type        = bool
 }
 
-variable "days_of_week" {
-  description = "A list of days on which backup can take place. Possible values are Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday"
-  type        = string
-  default     = null
-}
+variable "data_disks" {
+  description = <<-EOT
+    Additional disks to be attached to the virtual machine.
 
-variable "enable_auto_backup" {
-  description = "A boolean flag to enable or disable automatic backups for SQL backups."
-  type        = bool
-  default     = false
-}
+    Required parameters:
 
-variable "enable_auto_patching" {
-  description = "A boolean flag to enable or disable auto patching."
-  type        = bool
-  default     = false
+    Parameter | Description
+    -- | --
+    `disk_size_gb` | Specifies the size of the managed disk to create in gigabytes.
+    `lun` | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine.
+
+    Optional parameters:
+
+    Parameter | Description
+    -- | --
+    `caching` | Specifies the caching requirements for this Data Disk. Possible values include `None`, `ReadOnly` and `ReadWrite`.
+    `create_option` | The method to use when creating the managed disk. Possible values include: `Empty` - Create an empty managed disk. `Copy` - Copy an existing managed disk or snapshot (specified with `source_resource_id`). `Restore` - Set by Azure Backup or Site Recovery on a restored disk (specified with `source_resource_id`).
+    `name` | Specifies the name of the Managed Disk. If omitted a name will be generated based on `name`.
+    `source_resource_id` | The ID of an existing Managed Disk or Snapshot to copy when `create_option` is `Cop`y or the recovery point to restore when `create_option` is `Restore`.
+    `storage_account_type` | The type of storage to use for the managed disk. Possible values are `Standard_LRS`, `StandardSSD_ZRS`, `Premium_LRS`, `PremiumV2_LRS`, `Premium_ZRS`, `StandardSSD_LRS` or `UltraSSD_LRS`.
+  EOT
+
+  type = list(object({
+    caching              = optional(string, "ReadWrite")
+    create_option        = optional(string, "Empty")
+    disk_size_gb         = number
+    lun                  = number
+    name                 = optional(string)
+    source_resource_id   = optional(string)
+    storage_account_type = optional(string, "Premium_LRS")
+  }))
+
+  default = []
 }
 
 variable "enable_automatic_updates" {
@@ -182,47 +99,6 @@ variable "encryption_at_host_enabled" {
 
   type    = bool
   default = true
-}
-
-variable "extensions" {
-  description = <<-EOT
-    List of extensions to enable.
-
-    Possible values:
-    - `NetworkWatcherAgent`
-    - `AzureMonitorAgent`
-    - `AzurePolicy`
-    - `AntiMalware`
-  EOT
-
-  type = list(string)
-
-  default = [
-    "NetworkWatcherAgent",
-    "AzureMonitorAgent",
-    "AzurePolicy",
-    "AntiMalware",
-  ]
-}
-
-variable "hotpatching_enabled" {
-
-  description = <<-EOT
-    Should the Windows VM be patched without requiring a reboot? [more infos](https://learn.microsoft.com/windows-server/get-started/hotpatch)
-
-    **NOTE**: Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2 VM](https://learn.microsoft.com/en-gb/azure/virtual-machines/generation-2#generation-2-vm-sizes).
-
-    **CAUTION**: The setting `bypass_platform_safety_checks_on_user_schedule_enabled` is set to `true` by default. To enable hotpatching, change it to `false`.
-  EOT
-
-  type = bool
-
-  default = false
-
-  validation {
-    condition     = var.hotpatching_enabled == true ? true : var.bypass_platform_safety_checks_on_user_schedule_enabled
-    error_message = "Only one of the following options can be set to true: either bypass_platform_safety_checks_on_user_schedule_enabled or hotpatching_enabled."
-  }
 }
 
 variable "identity" {
@@ -270,6 +146,8 @@ variable "image" {
 
   type    = string
   default = "MicrosoftSQLServer:sql2022-ws2022:standard-gen2:latest"
+
+  # TODO: Should be updated on new releases
 }
 
 variable "key_vault_id" {
@@ -428,52 +306,57 @@ variable "sql_connectivity_type" {
   default     = null
 }
 
-variable "sql_instance_adhoc_workloads_optimization_enabled" {
-  description = "Specifies if the SQL Server is optimized for adhoc workloads. Possible values are true and false. Defaults to false."
-  type        = bool
-  default     = false
-}
-
-variable "sql_instance_collation" {
-  description = "Collation of the SQL Server. Defaults to SQL_Latin1_General_CP1_CI_AS. Changing this forces a new resource to be created."
+variable "sql_connectivity_update_password" {
+  description = "The SQL Server sysadmin login password."
   type        = string
-  default     = "SQL_Latin1_General_CP1_CI_AS"
+  default     = null
+  sensitive   = true
 }
 
-variable "sql_instance_instant_file_initialization_enabled" {
-  description = "Specifies if Instant File Initialization is enabled for the SQL Server. Possible values are true and false. Defaults to false. Changing this forces a new resource to be created."
-  type        = bool
-  default     = false
+variable "sql_connectivity_update_username" {
+  description = "The SQL Server sysadmin login to create."
+  type        = string
+  default     = "sqladmin"
 }
 
-variable "sql_instance_lock_pages_in_memory_enabled" {
-  description = "Specifies if Lock Pages in Memory is enabled for the SQL Server. Possible values are true and false. Defaults to false. Changing this forces a new resource to be created."
-  type        = bool
-  default     = false
-}
+variable "sql_instance" {
 
-variable "sql_instance_max_dop" {
-  description = "Maximum Degree of Parallelism of the SQL Server. Possible values are between 0 and 32767. Defaults to 0."
-  type        = number
-  default     = 0
+  description = <<-DESCRIPTION
+    SQL instance parameters.
+
+    Optional parameters:
+
+    Parameter | Description
+    -- | --
+    `adhoc_workloads_optimization_enabled` | Specifies if the SQL Server is optimized for adhoc workloads. Possible values are true and false.
+    `collation` | Collation of the SQL Server. Defaults to SQL_Latin1_General_CP1_CI_AS. Changing this forces a new resource to be created.
+    `instant_file_initialization_enabled` | Specifies if Instant File Initialization is enabled for the SQL Server. Possible values are true and false. Changing this forces a new resource to be created.
+    `lock_pages_in_memory_enabled` | Specifies if Lock Pages in Memory is enabled for the SQL Server. Possible values are true and false. Changing this forces a new resource to be created.
+    `max_dop` | Maximum Degree of Parallelism of the SQL Server. Possible values are between 0 and 32767.
+    `max_server_memory_mb` | Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647.
+    `min_server_memory_mb` | Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647.
+
+  DESCRIPTION
+
+  type = object({
+    adhoc_workloads_optimization_enabled = optional(bool, false)
+    collation                            = optional(string, "SQL_Latin1_General_CP1_CI_AS")
+    instant_file_initialization_enabled  = optional(bool, false)
+    lock_pages_in_memory_enabled         = optional(bool, false)
+    max_dop                              = optional(number, 0)
+    max_server_memory_mb                 = optional(number, 128)
+    min_server_memory_mb                 = optional(number, 0)
+  })
+
+  default = {}
+
   validation {
-    condition     = var.sql_instance_max_dop >= 0 && var.sql_instance_max_dop <= 32767
+    condition     = var.sql_instance.max_dop >= 0 && var.sql_instance.max_dop <= 32767
     error_message = "The Maximum Degree of Parallelism (max_dop) must be between 0 and 32767."
   }
-}
 
-variable "sql_instance_max_server_memory_mb" {
-  description = "Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647. Defaults to 2147483647."
-  type        = number
-  default     = 128
-}
-
-variable "sql_instance_min_server_memory_mb" {
-  description = "Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647. Defaults to 0."
-  type        = number
-  default     = 0
   validation {
-    condition     = var.sql_instance_min_server_memory_mb >= 0 && var.sql_instance_min_server_memory_mb <= var.sql_instance_max_server_memory_mb
+    condition     = var.sql_instance.min_server_memory_mb >= 0 && var.sql_instance.min_server_memory_mb <= var.sql_instance.max_server_memory_mb
     error_message = "Min server memory must be between 0 and the maximum memory setting."
   }
 }
@@ -489,7 +372,6 @@ variable "storage_configuration" {
     # TODO
   EOT
 
-
   default = null
 
   type = object({
@@ -498,45 +380,35 @@ variable "storage_configuration" {
     system_db_on_data_disk_enabled = optional(bool, false)
 
     data_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
-      # disk settings
-      disk_size_gb = optional(number)
-
-      caching = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
+      caching              = optional(string, "ReadWrite")
+      default_file_path    = optional(string, "F:\\data")
+      disk_size_gb         = optional(number)
+      luns                 = optional(list(number), [])
       storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
     }))
 
     log_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
-      # disk settings
-      disk_size_gb = optional(number)
-      caching      = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
+      caching              = optional(string, "ReadWrite")
+      default_file_path    = optional(string, "G:\\log")
+      disk_size_gb         = optional(number)
+      luns                 = optional(list(number), [])
       storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
     }))
 
     temp_db_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
+      caching                = optional(string, "ReadWrite")
       data_file_count        = optional(number, 8)
-      data_file_size_mb      = optional(number, 256)
       data_file_growth_in_mb = optional(number, 512)
-      log_file_size_mb       = optional(number, 256)
+      data_file_size_mb      = optional(number, 256)
+      default_file_path      = optional(string, "H:\\tempdb")
+      disk_size_gb           = optional(number)
       log_file_growth_mb     = optional(number, 512)
-
-      # disk settings
-      disk_size_gb = optional(number)
-      caching      = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
-      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
+      log_file_size_mb       = optional(number, 256)
+      luns                   = optional(list(number), [])
+      storage_account_type   = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
     }))
   })
+
   validation {
     condition = var.storage_configuration == null ? true : (var.storage_configuration.temp_db_settings == null ? true : (
       length(var.storage_configuration.temp_db_settings.luns) > 0 && var.storage_configuration.temp_db_settings.disk_size_gb != null
@@ -545,6 +417,7 @@ variable "storage_configuration" {
     ))
     error_message = "If var.storage_configuration.temp_db_settings.luns is provided you must provide the var.storage_configuration.temp_db_settings.disk_size_gb too. If var.storage_configuration.temp_db_settings.luns is not provided please leave the var.storage_configuration.temp_db_settings.disk_size_gb empty too."
   }
+
   validation {
     condition = var.storage_configuration == null ? true : (var.storage_configuration.log_settings == null ? true : (
       length(var.storage_configuration.log_settings.luns) > 0 && var.storage_configuration.log_settings.disk_size_gb != null
@@ -553,6 +426,7 @@ variable "storage_configuration" {
     ))
     error_message = "If var.storage_configuration.log_settings.luns is provided you must provide the var.storage_configuration.log_settings.disk_size_gb too. If var.storage_configuration.log_settings.luns is not provided please leave the var.storage_configuration.log_settings.disk_size_gb empty too."
   }
+
   validation {
     condition = var.storage_configuration == null ? true : (var.storage_configuration.data_settings == null ? true : (
       length(var.storage_configuration.data_settings.luns) > 0 && var.storage_configuration.data_settings.disk_size_gb != null
@@ -583,7 +457,11 @@ variable "tags" {
 }
 
 variable "tags_virtual_machine" {
-  description = "A mapping of tags which should be assigned to the Virtual Machine. This map will be merged with `tags`."
+  description = <<-DESCRIPTION
+    A mapping of tags to assign specifically to the Virtual Machine resource. These tags will be merged with the `tags` variable.
+
+    **NOTE**: By default, this module adds the tag `tags_virtual_machine` with a value of `95` to the Virtual Machine. You can override this default by specifying the `tags_virtual_machine` key in this variable.
+  DESCRIPTION
 
   type    = map(string)
   default = {}
