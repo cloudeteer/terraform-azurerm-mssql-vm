@@ -20,6 +20,11 @@ help: ## show this help.
 		else if (/^## .*$$/) {printf "  ${CYAN}%s${RESET}\n", substr($$1,4)} \
 		}' $(MAKEFILE_LIST)
 
+.PHONY: clean
+clean:
+	rm -rf .terraform
+	rm -rf .terraform.lock.hcl
+
 .PHONY: test-default
 test-default: ## Run tests on default
 	@echo "Running tests on default"
@@ -45,7 +50,7 @@ test-remote: ## Run tests on remote
 	terraform test -test-directory=tests/remote
 
 .PHONY: test
-test: test-default test-examples test-local test-remote ## Run all tests
+test: test-default test-examples test-local clean test-remote ## Run all tests
 
 .PHONY: docs
 generate-docs: README.md ## Generate Terraform docs and update README.md
