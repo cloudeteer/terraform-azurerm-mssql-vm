@@ -95,6 +95,28 @@ module "example" {
   subnet_id        = azurerm_subnet.example.id
 
   computer_name = "example"
+
+  storage_configuration = {
+    disk_type                      = "NEW" # COPY
+    storage_workload_type          = "OLTP"
+    system_db_on_data_disk_enabled = false
+
+    data_settings = {
+      luns              = [0]
+      disk_size_gb      = 64
+      default_file_path = "F:\\data"
+    }
+    log_settings = {
+      luns              = [1]
+      disk_size_gb      = 64
+      default_file_path = "G:\\log"
+    }
+    temp_db_settings = {
+      luns              = [2]
+      disk_size_gb      = 64
+      default_file_path = "H:\\tempdb"
+    }
+  }
 }
 ```
 
