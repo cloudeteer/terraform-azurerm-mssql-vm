@@ -136,7 +136,7 @@ The following Modules are called:
 
 Source: cloudeteer/vm/azurerm
 
-Version: 0.0.20
+Version: 1.3.5
 
 ## Resources
 
@@ -166,118 +166,6 @@ Type: `string`
 
 Default: `"azureadmin"`
 
-### <a name="input_allow_extension_operations"></a> [allow\_extension\_operations](#input\_allow\_extension\_operations)
-
-Description: Should Extension Operations be allowed on this Virtual Machine?
-
-Type: `bool`
-
-Default: `true`
-
-### <a name="input_auto_backup_encryption_enabled"></a> [auto\_backup\_encryption\_enabled](#input\_auto\_backup\_encryption\_enabled)
-
-Description: A boolean flag to specify whether encryption is enabled for backups.
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_auto_backup_encryption_password"></a> [auto\_backup\_encryption\_password](#input\_auto\_backup\_encryption\_password)
-
-Description: The password used to encrypt backups if encryption is enabled. Must be specified when encryption is enabled.
-
-Type: `string`
-
-Default: `""`
-
-### <a name="input_auto_backup_manual_schedule_full_backup_frequency"></a> [auto\_backup\_manual\_schedule\_full\_backup\_frequency](#input\_auto\_backup\_manual\_schedule\_full\_backup\_frequency)
-
-Description: Frequency of full backups. Possible values: 'Daily', 'Weekly'.
-
-Type: `string`
-
-Default: `"Weekly"`
-
-### <a name="input_auto_backup_manual_schedule_full_backup_start_hour"></a> [auto\_backup\_manual\_schedule\_full\_backup\_start\_hour](#input\_auto\_backup\_manual\_schedule\_full\_backup\_start\_hour)
-
-Description: The hour of the day to start full backups, in 24-hour format (0-23).
-
-Type: `number`
-
-Default: `null`
-
-### <a name="input_auto_backup_manual_schedule_full_backup_window_in_hours"></a> [auto\_backup\_manual\_schedule\_full\_backup\_window\_in\_hours](#input\_auto\_backup\_manual\_schedule\_full\_backup\_window\_in\_hours)
-
-Description: The number of hours the full backup operation can run.
-
-Type: `number`
-
-Default: `null`
-
-### <a name="input_auto_backup_manual_schedule_log_backup_frequency_in_minutes"></a> [auto\_backup\_manual\_schedule\_log\_backup\_frequency\_in\_minutes](#input\_auto\_backup\_manual\_schedule\_log\_backup\_frequency\_in\_minutes)
-
-Description: Frequency of log backups, in minutes. Valid values are from 5 to 60.
-
-Type: `number`
-
-Default: `5`
-
-### <a name="input_auto_backup_retention_period_in_days"></a> [auto\_backup\_retention\_period\_in\_days](#input\_auto\_backup\_retention\_period\_in\_days)
-
-Description: The number of days to retain backups for the SQL virtual machine.
-
-Type: `number`
-
-Default: `null`
-
-### <a name="input_auto_backup_storage_account_access_key"></a> [auto\_backup\_storage\_account\_access\_key](#input\_auto\_backup\_storage\_account\_access\_key)
-
-Description: The access key for the storage account to store SQL Server backups.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_auto_backup_storage_blob_endpoint"></a> [auto\_backup\_storage\_blob\_endpoint](#input\_auto\_backup\_storage\_blob\_endpoint)
-
-Description: The storage blob endpoint for the backup of the SQL virtual machine.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_auto_backup_system_databases_backup_enabled"></a> [auto\_backup\_system\_databases\_backup\_enabled](#input\_auto\_backup\_system\_databases\_backup\_enabled)
-
-Description: A boolean flag to specify whether system databases are included in the backup.
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_auto_patching_day_of_week"></a> [auto\_patching\_day\_of\_week](#input\_auto\_patching\_day\_of\_week)
-
-Description: The day of the week for auto patching. Possible values: 'Sunday', 'Monday', etc.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_auto_patching_maintenance_window_duration_in_minutes"></a> [auto\_patching\_maintenance\_window\_duration\_in\_minutes](#input\_auto\_patching\_maintenance\_window\_duration\_in\_minutes)
-
-Description: The duration of the maintenance window in minutes for auto patching.
-
-Type: `number`
-
-Default: `null`
-
-### <a name="input_auto_patching_maintenance_window_starting_hour"></a> [auto\_patching\_maintenance\_window\_starting\_hour](#input\_auto\_patching\_maintenance\_window\_starting\_hour)
-
-Description: The starting hour (0-23) of the maintenance window for auto patching.
-
-Type: `number`
-
-Default: `null`
-
 ### <a name="input_backup_policy_id"></a> [backup\_policy\_id](#input\_backup\_policy\_id)
 
 Description: The ID of the backup policy to use.
@@ -285,16 +173,6 @@ Description: The ID of the backup policy to use.
 Type: `string`
 
 Default: `null`
-
-### <a name="input_bypass_platform_safety_checks_on_user_schedule_enabled"></a> [bypass\_platform\_safety\_checks\_on\_user\_schedule\_enabled](#input\_bypass\_platform\_safety\_checks\_on\_user\_schedule\_enabled)
-
-Description: Specifies whether to skip platform scheduled patching when a user schedule is associated with the VM.
-
-**NOTE**: Can only be set to true when `patch_mode` is set to `AutomaticByPlatform`.
-
-Type: `bool`
-
-Default: `true`
 
 ### <a name="input_computer_name"></a> [computer\_name](#input\_computer\_name)
 
@@ -307,30 +185,6 @@ Default: `null`
 ### <a name="input_create_public_ip_address"></a> [create\_public\_ip\_address](#input\_create\_public\_ip\_address)
 
 Description: If set to `true` a Azure public IP address will be created and assigned to the default network interface.
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_days_of_week"></a> [days\_of\_week](#input\_days\_of\_week)
-
-Description: A list of days on which backup can take place. Possible values are Monday, Tuesday, Wednesday, Thursday, Friday, Saturday and Sunday
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_enable_auto_backup"></a> [enable\_auto\_backup](#input\_enable\_auto\_backup)
-
-Description: A boolean flag to enable or disable automatic backups for SQL backups.
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_enable_auto_patching"></a> [enable\_auto\_patching](#input\_enable\_auto\_patching)
-
-Description: A boolean flag to enable or disable auto patching.
 
 Type: `bool`
 
@@ -369,41 +223,6 @@ Description: Should all of the disks (including the temp disk) attached to this 
 Type: `bool`
 
 Default: `true`
-
-### <a name="input_extensions"></a> [extensions](#input\_extensions)
-
-Description: List of extensions to enable.
-
-Possible values:
-- `NetworkWatcherAgent`
-- `AzureMonitorAgent`
-- `AzurePolicy`
-- `AntiMalware`
-
-Type: `list(string)`
-
-Default:
-
-```json
-[
-  "NetworkWatcherAgent",
-  "AzureMonitorAgent",
-  "AzurePolicy",
-  "AntiMalware"
-]
-```
-
-### <a name="input_hotpatching_enabled"></a> [hotpatching\_enabled](#input\_hotpatching\_enabled)
-
-Description: Should the Windows VM be patched without requiring a reboot? [more infos](https://learn.microsoft.com/windows-server/get-started/hotpatch)
-
-**NOTE**: Hotpatching can only be enabled if the `patch_mode` is set to `AutomaticByPlatform`, the `provision_vm_agent` is set to `true`, your `source_image_reference` references a hotpatching enabled image, and the VM's `size` is set to a [Azure generation 2 VM](https://learn.microsoft.com/en-gb/azure/virtual-machines/generation-2#generation-2-vm-sizes).
-
-**CAUTION**: The setting `bypass_platform_safety_checks_on_user_schedule_enabled` is set to `true` by default. To enable hotpatching, change it to `false`.
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_identity"></a> [identity](#input\_identity)
 
@@ -631,61 +450,53 @@ Type: `string`
 
 Default: `null`
 
-### <a name="input_sql_instance_adhoc_workloads_optimization_enabled"></a> [sql\_instance\_adhoc\_workloads\_optimization\_enabled](#input\_sql\_instance\_adhoc\_workloads\_optimization\_enabled)
+### <a name="input_sql_connectivity_update_password"></a> [sql\_connectivity\_update\_password](#input\_sql\_connectivity\_update\_password)
 
-Description: Specifies if the SQL Server is optimized for adhoc workloads. Possible values are true and false. Defaults to false.
-
-Type: `bool`
-
-Default: `false`
-
-### <a name="input_sql_instance_collation"></a> [sql\_instance\_collation](#input\_sql\_instance\_collation)
-
-Description: Collation of the SQL Server. Defaults to SQL\_Latin1\_General\_CP1\_CI\_AS. Changing this forces a new resource to be created.
+Description: The SQL Server sysadmin login password.
 
 Type: `string`
 
-Default: `"SQL_Latin1_General_CP1_CI_AS"`
+Default: `null`
 
-### <a name="input_sql_instance_instant_file_initialization_enabled"></a> [sql\_instance\_instant\_file\_initialization\_enabled](#input\_sql\_instance\_instant\_file\_initialization\_enabled)
+### <a name="input_sql_connectivity_update_username"></a> [sql\_connectivity\_update\_username](#input\_sql\_connectivity\_update\_username)
 
-Description: Specifies if Instant File Initialization is enabled for the SQL Server. Possible values are true and false. Defaults to false. Changing this forces a new resource to be created.
+Description: The SQL Server sysadmin login to create.
 
-Type: `bool`
+Type: `string`
 
-Default: `false`
+Default: `"sqladmin"`
 
-### <a name="input_sql_instance_lock_pages_in_memory_enabled"></a> [sql\_instance\_lock\_pages\_in\_memory\_enabled](#input\_sql\_instance\_lock\_pages\_in\_memory\_enabled)
+### <a name="input_sql_instance"></a> [sql\_instance](#input\_sql\_instance)
 
-Description: Specifies if Lock Pages in Memory is enabled for the SQL Server. Possible values are true and false. Defaults to false. Changing this forces a new resource to be created.
+Description: SQL instance parameters.
 
-Type: `bool`
+Optional parameters:
 
-Default: `false`
+Parameter | Description
+-- | --
+`adhoc_workloads_optimization_enabled` | Specifies if the SQL Server is optimized for adhoc workloads. Possible values are true and false.
+`collation` | Collation of the SQL Server. Defaults to SQL\_Latin1\_General\_CP1\_CI\_AS. Changing this forces a new resource to be created.
+`instant_file_initialization_enabled` | Specifies if Instant File Initialization is enabled for the SQL Server. Possible values are true and false. Changing this forces a new resource to be created.
+`lock_pages_in_memory_enabled` | Specifies if Lock Pages in Memory is enabled for the SQL Server. Possible values are true and false. Changing this forces a new resource to be created.
+`max_dop` | Maximum Degree of Parallelism of the SQL Server. Possible values are between 0 and 32767.
+`max_server_memory_mb` | Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647.
+`min_server_memory_mb` | Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647.
 
-### <a name="input_sql_instance_max_dop"></a> [sql\_instance\_max\_dop](#input\_sql\_instance\_max\_dop)
+Type:
 
-Description: Maximum Degree of Parallelism of the SQL Server. Possible values are between 0 and 32767. Defaults to 0.
+```hcl
+object({
+    adhoc_workloads_optimization_enabled = optional(bool, false)
+    collation                            = optional(string, "SQL_Latin1_General_CP1_CI_AS")
+    instant_file_initialization_enabled  = optional(bool, false)
+    lock_pages_in_memory_enabled         = optional(bool, false)
+    max_dop                              = optional(number, 0)
+    max_server_memory_mb                 = optional(number, 128)
+    min_server_memory_mb                 = optional(number, 0)
+  })
+```
 
-Type: `number`
-
-Default: `0`
-
-### <a name="input_sql_instance_max_server_memory_mb"></a> [sql\_instance\_max\_server\_memory\_mb](#input\_sql\_instance\_max\_server\_memory\_mb)
-
-Description: Maximum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 128 and 2147483647. Defaults to 2147483647.
-
-Type: `number`
-
-Default: `128`
-
-### <a name="input_sql_instance_min_server_memory_mb"></a> [sql\_instance\_min\_server\_memory\_mb](#input\_sql\_instance\_min\_server\_memory\_mb)
-
-Description: Minimum amount of memory that SQL Server Memory Manager can allocate to the SQL Server process. Possible values are between 0 and 2147483647. Defaults to 0.
-
-Type: `number`
-
-Default: `0`
+Default: `{}`
 
 ### <a name="input_sql_license_type"></a> [sql\_license\_type](#input\_sql\_license\_type)
 
@@ -708,43 +519,32 @@ object({
     system_db_on_data_disk_enabled = optional(bool, false)
 
     data_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
-      # disk settings
-      disk_size_gb = optional(number)
-
-      caching = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
+      caching              = optional(string, "ReadWrite")
+      default_file_path    = optional(string, "F:\\data")
+      disk_size_gb         = optional(number)
+      luns                 = optional(list(number), [])
       storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
     }))
 
     log_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
-      # disk settings
-      disk_size_gb = optional(number)
-      caching      = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
+      caching              = optional(string, "ReadWrite")
+      default_file_path    = optional(string, "G:\\log")
+      disk_size_gb         = optional(number)
+      luns                 = optional(list(number), [])
       storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRS
     }))
 
     temp_db_settings = optional(object({
-      default_file_path = string
-      luns              = optional(list(number), [])
-
+      caching                = optional(string, "ReadWrite")
       data_file_count        = optional(number, 8)
-      data_file_size_mb      = optional(number, 256)
       data_file_growth_in_mb = optional(number, 512)
-      log_file_size_mb       = optional(number, 256)
+      data_file_size_mb      = optional(number, 256)
+      default_file_path      = optional(string, "H:\\tempdb")
+      disk_size_gb           = optional(number)
       log_file_growth_mb     = optional(number, 512)
-
-      # disk settings
-      disk_size_gb = optional(number)
-      caching      = optional(string, "ReadWrite")
-      # create_option        = "Empty" ? related to disk_type ?
-      storage_account_type = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
+      log_file_size_mb       = optional(number, 256)
+      luns                   = optional(list(number), [])
+      storage_account_type   = optional(string, "Premium_LRS") # or UltraSSD_LRSÏ
     }))
   })
 ```
@@ -777,7 +577,9 @@ Default: `{}`
 
 ### <a name="input_tags_virtual_machine"></a> [tags\_virtual\_machine](#input\_tags\_virtual\_machine)
 
-Description: A mapping of tags which should be assigned to the Virtual Machine. This map will be merged with `tags`.
+Description: A mapping of tags to assign specifically to the Virtual Machine resource. These tags will be merged with the `tags` variable.
+
+**NOTE**: By default, this module adds the tag `tags_virtual_machine` with a value of `95` to the Virtual Machine. You can override this default by specifying the `tags_virtual_machine` key in this variable.
 
 Type: `map(string)`
 
