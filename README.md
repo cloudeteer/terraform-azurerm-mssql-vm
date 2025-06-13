@@ -126,6 +126,8 @@ The following providers are used by this module:
 
 - <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 4.1)
 
+- <a name="provider_random"></a> [random](#provider\_random) (>= 3.7)
+
 - <a name="provider_time"></a> [time](#provider\_time) (>= 0.12)
 
 ## Modules
@@ -142,7 +144,9 @@ Version: 1.3.5
 
 The following resources are used by this module:
 
+- [azurerm_key_vault_secret.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_secret) (resource)
 - [azurerm_mssql_virtual_machine.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mssql_virtual_machine) (resource)
+- [random_password.sql_connectivity_update_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
 - [time_sleep.wait_60_seconds](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) (resource)
 
 

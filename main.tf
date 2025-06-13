@@ -58,6 +58,11 @@ locals {
     "Standard_F2s_v2"   = 4096  #   4 GB
     "Standard_F4s_v2"   = 8192  #   8 GB
   }
+
+  sql_connectivity_update_password = coalesce(
+    var.sql_connectivity_update_password,
+    one(random_password.sql_connectivity_update_password[*].result)
+  )
 }
 
 #trivy:ignore:avd-azu-0039
@@ -115,7 +120,7 @@ resource "azurerm_mssql_virtual_machine" "this" {
   sql_connectivity_port            = var.sql_connectivity_port
   sql_connectivity_type            = var.sql_connectivity_type
   sql_connectivity_update_username = var.sql_connectivity_update_username
-  sql_connectivity_update_password = var.sql_connectivity_update_password
+  sql_connectivity_update_password = local.sql_connectivity_update_password
 
   dynamic "sql_instance" {
     for_each = var.enable_sql_instance ? [true] : []
@@ -168,4 +173,19 @@ resource "azurerm_mssql_virtual_machine" "this" {
       }
     }
   }
+}
+
+resource "random_password" "sql_connectivity_update_password" {
+  count  = var.sql_connectivity_update_password == null ? 1 : 0
+  length = 24
+}
+
+#trivy:ignore:avd-azu-0017
+resource "azurerm_key_vault_secret" "this" {
+  count = var.sql_connectivity_update_password == null ? 1 : 0
+
+  name         = "${var.name}-${var.sql_connectivity_update_username}-sql"
+  content_type = "SQL Server Sysadmin Password"
+  key_vault_id = var.key_vault_id
+  value        = one(random_password.sql_connectivity_update_password[*].result)
 }
